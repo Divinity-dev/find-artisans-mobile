@@ -12,6 +12,8 @@ import {
 import { StatusBar } from "expo-status-bar";
 import LocationSelector from "../components/LocationSelector";
 import ServiceSearch from "../components/ServiceSearch";
+import { useNavigation } from "@react-navigation/native";
+import useGeolocation from "../hooks/useGeolocation";
 
 const HomeScreen = () => {
     const [selectedLocation, setSelectedLocation] = useState({
@@ -20,10 +22,48 @@ const HomeScreen = () => {
   lga: "",
 });
 const [selectedService, setSelectedService] = useState("");
+
+const navigation = useNavigation();
+
+const {
+  location,
+  loading: locationLoading,
+  error: locationError,
+  getLocation,
+} = useGeolocation();
+
 const handleSearch = () => {
-  console.log("Service:", selectedService);
-  console.log("Location:", selectedLocation);
+  navigation.navigate("Workers", {
+    service: selectedService,
+    location: selectedLocation,
+    latitude: null,
+    longitude: null,
+  });
 };
+
+const handleFindNearMe = async () => {
+  try {
+    const coordinates = await getLocation();
+
+    if (!coordinates) {
+      return;
+    }
+
+    navigation.navigate("Workers", {
+      service: "",
+      location: {
+        state: "",
+        city: "",
+        lga: "",
+      },
+      latitude: coordinates.latitude,
+      longitude: coordinates.longitude,
+    });
+  } catch (error) {
+    console.error("Find near me error:", error);
+  }
+};
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="light" />
@@ -107,20 +147,48 @@ const handleSearch = () => {
 </TouchableOpacity>
 
               {/* Find near me */}
-              <TouchableOpacity
-                activeOpacity={0.8}
-                style={styles.nearMeButton}
-              >
+            <TouchableOpacity
+  activeOpacity={0.8}
+  style={[
+    styles.nearMeButton,
+    locationLoading && styles.disabledNearMeButton,
+  ]}
+  onPress={handleFindNearMe}
+  disabled={locationLoading}
+>
 
                 <Text style={styles.nearMeIcon}>
                   📍
                 </Text>
 
                 <Text style={styles.nearMeText}>
-                  Find artisans near me
-                </Text>
+  {locationLoading
+    ? "Finding your location..."
+    : "Find artisans near me"}
+</Text>
 
               </TouchableOpacity>
+              <TouchableOpacity
+  activeOpacity={0.8}
+  style={styles.browseButton}
+  onPress={() => {
+    navigation.navigate("Workers", {
+      service: "",
+      location: {
+        state: "",
+        city: "",
+        lga: "",
+      },
+      latitude: null,
+      longitude: null,
+    });
+  }}
+>
+  <Text style={styles.browseButtonText}>
+    Browse all artisans
+  </Text>
+</TouchableOpacity>
+              
 
             </View>
 
@@ -327,6 +395,27 @@ const styles = StyleSheet.create({
 },
 
 searchButtonText: {
+  color: "#ffffff",
+  fontSize: 15,
+  fontWeight: "700",
+},
+
+disabledNearMeButton: {
+  opacity: 0.7,
+},
+
+browseButton: {
+  alignItems: "center",
+  justifyContent: "center",
+  backgroundColor: "rgba(255, 255, 255, 0.08)",
+  borderRadius: 14,
+  minHeight: 54,
+  marginTop: 12,
+  borderWidth: 1,
+  borderColor: "rgba(255, 255, 255, 0.12)",
+},
+
+browseButtonText: {
   color: "#ffffff",
   fontSize: 15,
   fontWeight: "700",
