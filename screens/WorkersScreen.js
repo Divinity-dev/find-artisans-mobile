@@ -8,6 +8,7 @@ import {
   View,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import Navbar from "../components/Navbar";
 
 import ArtisanCard from "../components/ArtisanCard";
 
@@ -277,7 +278,7 @@ const WorkersScreen = ({ route }) => {
     return (
       <SafeAreaView style={styles.container}>
         <StatusBar style="light" />
-
+     
         <View style={styles.center}>
           <ActivityIndicator
             size="large"
@@ -317,7 +318,7 @@ const WorkersScreen = ({ route }) => {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="light" />
-
+        <Navbar />
       <FlatList
         data={artisans}
 
