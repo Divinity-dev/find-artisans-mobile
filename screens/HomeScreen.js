@@ -14,6 +14,15 @@ import LocationSelector from "../components/LocationSelector";
 import ServiceSearch from "../components/ServiceSearch";
 import { useNavigation } from "@react-navigation/native";
 import useGeolocation from "../hooks/useGeolocation";
+import Navbar from "../components/Navbar";
+import TrustIndicators from "../components/TrustIndicators";
+import FindWaysSection from "../components/FindWaysSection";
+import HowItWorks from "../components/HowItWorks";
+import WhyFindArtisans from "../components/WhyFindArtisans";
+import PopularCategories from "../components/PopularCategories";
+import Testimonials from "../components/Testimonials";
+import FinalCTA from "../components/FinalCTA";
+import Footer from "../components/Footer";
 
 const HomeScreen = () => {
     const [selectedLocation, setSelectedLocation] = useState({
@@ -67,7 +76,7 @@ const handleFindNearMe = async () => {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="light" />
-
+        <Navbar />
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
@@ -192,11 +201,113 @@ const handleFindNearMe = async () => {
 
             </View>
 
-          </View>
+                  </View>
 
-        </View>
+      </View>
 
-      </ScrollView>
+      <TrustIndicators />
+
+      <FindWaysSection
+        onBrowse={() => {
+          navigation.navigate("Workers", {
+            service: "",
+            location: {
+              state: "",
+              city: "",
+              lga: "",
+            },
+            latitude: null,
+            longitude: null,
+          });
+        }}
+      />
+
+      <HowItWorks />
+
+<WhyFindArtisans
+  onBrowse={() => {
+    navigation.navigate("Workers", {
+      service: "",
+      location: {
+        state: "",
+        city: "",
+        lga: "",
+      },
+      latitude: null,
+      longitude: null,
+    });
+  }}
+/>
+
+<PopularCategories
+  onViewAll={() => {
+    navigation.navigate("Workers", {
+      service: "",
+      location: {
+        state: "",
+        city: "",
+        lga: "",
+      },
+      latitude: null,
+      longitude: null,
+    });
+  }}
+  onCategoryPress={(category) => {
+    navigation.navigate("Workers", {
+      service: category.replace(/s$/, ""),
+      location: {
+        state: "",
+        city: "",
+        lga: "",
+      },
+      latitude: null,
+      longitude: null,
+    });
+  }}
+/>
+
+<Testimonials />
+
+<FinalCTA
+  onBrowse={() => {
+    navigation.navigate("Workers", {
+      service: "",
+      location: {
+        state: "",
+        city: "",
+        lga: "",
+      },
+      latitude: null,
+      longitude: null,
+    });
+  }}
+  onJoin={() => {
+    navigation.navigate("Register");
+  }}
+/>
+
+<Footer
+  onHome={() => {
+    // Already on Home
+  }}
+  onWorkers={() => {
+    navigation.navigate("Workers", {
+      service: "",
+      location: {
+        state: "",
+        city: "",
+        lga: "",
+      },
+      latitude: null,
+      longitude: null,
+    });
+  }}
+  onRegister={() => {
+    navigation.navigate("Register");
+  }}
+/>
+
+    </ScrollView>
     </SafeAreaView>
   );
 };

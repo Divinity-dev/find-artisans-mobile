@@ -95,6 +95,71 @@ const AuthProvider = ({ children }) => {
   };
 
   // ======================================
+// REGISTER
+// ======================================
+
+const register = async (
+  fullName,
+  email,
+  phone,
+  role,
+  password
+) => {
+  try {
+    const response = await fetch(
+      `${process.env.EXPO_PUBLIC_API_URL}/auth/register`,
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+        },
+
+        body: JSON.stringify({
+          fullName,
+          email,
+          phone,
+          role,
+          password,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.message || "Registration failed"
+      );
+    }
+
+    // Store authentication data
+    await AsyncStorage.setItem(
+      "token",
+      data.token
+    );
+
+    await AsyncStorage.setItem(
+      "user",
+      JSON.stringify(data.user)
+    );
+
+    // Update authentication state
+    setToken(data.token);
+    setUser(data.user);
+
+    return data;
+  } catch (error) {
+    console.error(
+      "Registration error:",
+      error
+    );
+
+    throw error;
+  }
+};
+
+  // ======================================
   // LOGOUT
   // ======================================
 
@@ -121,6 +186,7 @@ const AuthProvider = ({ children }) => {
         loading,
         isAuthenticated: !!token,
         login,
+         register,
         logout,
       }}
     >
