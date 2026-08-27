@@ -10,6 +10,10 @@ import LoginScreen from "../screens/LoginScreen";
 import RegisterScreen from "../screens/RegisterScreen";
 import ForgotPasswordScreen from "../screens/ForgotPasswordScreen";
 import ResetPasswordScreen from "../screens/ResetPasswordScreen";
+import WorkerDetailsScreen from "../screens/WorkerDetailsScreen";
+import JobsScreen from "../screens/JobsScreen";
+import JobDetailsScreen from "../screens/JobDetailsScreen";
+import CustomerProfileScreen from "../screens/CustomerProfileScreen";
 
 const Stack =
   createNativeStackNavigator();
@@ -32,6 +36,26 @@ const AppNavigator = () => {
         name="Workers"
         component={WorkersScreen}
       />
+
+      <Stack.Screen
+  name="Jobs"
+  component={JobsScreen}
+/>
+
+<Stack.Screen
+  name="JobDetails"
+  component={JobDetailsScreen}
+/>
+
+<Stack.Screen
+  name="CustomerProfile"
+  component={CustomerProfileScreen}
+/>
+
+      <Stack.Screen
+  name="WorkerDetails"
+  component={WorkerDetailsScreen}
+/>
 
       <Stack.Screen
   name="Register"
