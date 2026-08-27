@@ -14,6 +14,11 @@ import WorkerDetailsScreen from "../screens/WorkerDetailsScreen";
 import JobsScreen from "../screens/JobsScreen";
 import JobDetailsScreen from "../screens/JobDetailsScreen";
 import CustomerProfileScreen from "../screens/CustomerProfileScreen";
+import WorkerDashboardScreen from "../screens/WorkerDashboardScreen";
+import CustomerDashboardScreen from "../screens/CustomerDashboardScreen";
+import PostJobScreen from "../screens/PostJobScreen";
+import CustomerProfileEditScreen from "../screens/CustomerProfileEditScreen";
+import WorkerProfileEditScreen from "../screens/WorkerProfileEditScreen";
 
 const Stack =
   createNativeStackNavigator();
@@ -50,6 +55,31 @@ const AppNavigator = () => {
 <Stack.Screen
   name="CustomerProfile"
   component={CustomerProfileScreen}
+/>
+
+<Stack.Screen
+  name="CustomerDashboard"
+  component={CustomerDashboardScreen}
+/>
+
+<Stack.Screen
+  name="WorkerProfileEdit"
+  component={WorkerProfileEditScreen}
+/>
+
+<Stack.Screen
+  name="PostJob"
+  component={PostJobScreen}
+/>
+
+<Stack.Screen
+  name="CutomerProfileEdit"
+  component={CustomerProfileEditScreen}
+/>
+
+<Stack.Screen
+  name="WorkerDashboard"
+  component={WorkerDashboardScreen}
 />
 
       <Stack.Screen
