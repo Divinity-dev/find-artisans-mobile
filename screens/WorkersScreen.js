@@ -30,7 +30,7 @@ const DISTANCE_OPTIONS = [
   { value: "25", label: "25 km" },
 ];
 
-const WorkersScreen = ({ route }) => {
+const WorkersScreen = ({ route, navigation }) => {
   // =====================================================
   // ROUTE PARAMETERS
   // =====================================================
@@ -505,17 +505,16 @@ const WorkersScreen = ({ route }) => {
         keyExtractor={(item) =>
           item._id
         }
-        renderItem={({ item }) => (
-          <ArtisanCard
-            artisan={item}
-            onPress={() => {
-              console.log(
-                "Selected artisan:",
-                item
-              );
-            }}
-          />
-        )}
+      renderItem={({ item }) => (
+  <ArtisanCard
+    artisan={item}
+    onPress={() =>
+      navigation.navigate("WorkerDetails", {
+        id: item._id,
+      })
+    }
+  />
+)}
         contentContainerStyle={
           styles.listContent
         }

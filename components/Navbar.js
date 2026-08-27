@@ -206,6 +206,19 @@ const Navbar = () => {
                 </Text>
               </TouchableOpacity>
 
+              {/* JOBS */}
+
+<TouchableOpacity
+  style={styles.navLink}
+  onPress={() =>
+    handleNavigation("Jobs")
+  }
+>
+  <Text style={styles.navLinkText}>
+    Jobs
+  </Text>
+</TouchableOpacity>
+
               {/* ======================================
                   AUTHENTICATED USER
               ====================================== */}
