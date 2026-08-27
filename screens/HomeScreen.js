@@ -29,6 +29,7 @@ import FinalCTA from "../components/FinalCTA";
 import Footer from "../components/Footer";
 import ArtisanCard from "../components/ArtisanCard";
 
+
 const HomeScreen = () => {
     const [selectedLocation, setSelectedLocation] = useState({
   state: "",
