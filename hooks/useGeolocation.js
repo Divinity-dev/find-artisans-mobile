@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import * as Location from "expo-location";
 
 const useGeolocation = () => {
@@ -6,29 +6,35 @@ const useGeolocation = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const getLocation = async () => {
+  const getLocation = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
 
-      // Request permission to use the device location
-      const { status } =
-        await Location.requestForegroundPermissionsAsync();
-
-      if (status !== "granted") {
+      // 1. Check if device location services (GPS toggle) are enabled
+      const servicesEnabled = await Location.hasServicesEnabledAsync();
+      if (!servicesEnabled) {
         setError(
-          "Location permission was denied. Please allow location access to find artisans near you."
+          "Location services are turned off on your device. Please enable GPS and try again."
         );
-
         setLoading(false);
         return null;
       }
 
-      // Get the current device location
-      const currentLocation =
-        await Location.getCurrentPositionAsync({
-          accuracy: Location.Accuracy.High,
-        });
+      // 2. Request permission to access foreground location
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        setError(
+          "Location permission was denied. Please allow location access to find artisans near you."
+        );
+        setLoading(false);
+        return null;
+      }
+
+      // 3. Obtain position with Balanced accuracy fallback & speed optimizations
+      const currentLocation = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced, // High can stall outdoors/indoor transitions
+      });
 
       const coordinates = {
         latitude: currentLocation.coords.latitude,
@@ -36,20 +42,15 @@ const useGeolocation = () => {
       };
 
       setLocation(coordinates);
-
       return coordinates;
     } catch (err) {
       console.error("Geolocation error:", err);
-
-      setError(
-        "Unable to get your current location. Please try again."
-      );
-
+      setError("Unable to get your current location. Please try again.");
       return null;
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   return {
     location,
@@ -60,4 +61,3 @@ const useGeolocation = () => {
 };
 
 export default useGeolocation;
-

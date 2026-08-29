@@ -1,18 +1,15 @@
-import React, {
-  useEffect,
-  useState,
-} from "react";
+import React, { useEffect, useState } from "react";
 import {
-  Image,
   ActivityIndicator,
-  SafeAreaView,
+  ImageBackground,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import LocationSelector from "../components/LocationSelector";
 import ServiceSearch from "../components/ServiceSearch";
@@ -29,292 +26,42 @@ import FinalCTA from "../components/FinalCTA";
 import Footer from "../components/Footer";
 import ArtisanCard from "../components/ArtisanCard";
 
-
 const HomeScreen = () => {
-    const [selectedLocation, setSelectedLocation] = useState({
-  state: "",
-  city: "",
-  lga: "",
-});
-const [selectedService, setSelectedService] = useState("");
-const [featuredArtisans, setFeaturedArtisans] =
-  useState([]);
-
-const [featuredLoading, setFeaturedLoading] =
-  useState(true);
-
-const navigation = useNavigation();
-
-const {
-  location,
-  loading: locationLoading,
-  error: locationError,
-  getLocation,
-} = useGeolocation();
-
-const handleSearch = () => {
-  navigation.navigate("Workers", {
-    service: selectedService,
-    location: selectedLocation,
-    latitude: null,
-    longitude: null,
+  const [selectedLocation, setSelectedLocation] = useState({
+    state: "",
+    city: "",
+    lga: "",
   });
-};
+  const [selectedService, setSelectedService] = useState("");
+  const [featuredArtisans, setFeaturedArtisans] = useState([]);
+  const [featuredLoading, setFeaturedLoading] = useState(true);
 
-const handleFindNearMe = async () => {
-  try {
-    const coordinates = await getLocation();
+  const navigation = useNavigation();
 
-    if (!coordinates) {
-      return;
-    }
+  const {
+    location,
+    loading: locationLoading,
+    error: locationError,
+    getLocation,
+  } = useGeolocation();
 
+  const handleSearch = () => {
     navigation.navigate("Workers", {
-      service: "",
-      location: {
-        state: "",
-        city: "",
-        lga: "",
-      },
-      latitude: coordinates.latitude,
-      longitude: coordinates.longitude,
-    });
-  } catch (error) {
-    console.error("Find near me error:", error);
-  }
-};
-
-// ==========================================
-// FETCH FEATURED ARTISANS
-// ==========================================
-
-useEffect(() => {
-  const fetchFeaturedArtisans = async () => {
-    try {
-      setFeaturedLoading(true);
-
-      const params = new URLSearchParams();
-
-      params.append("page", "1");
-      params.append("limit", "4");
-
-      const url =
-        `${process.env.EXPO_PUBLIC_API_URL}/users/workers/all?${params.toString()}`;
-
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        throw new Error(
-          "Failed to fetch featured artisans."
-        );
-      }
-
-      const data = await response.json();
-
-      setFeaturedArtisans(
-        data.workers || []
-      );
-    } catch (error) {
-      console.error(
-        "Failed to fetch featured artisans:",
-        error
-      );
-    } finally {
-      setFeaturedLoading(false);
-    }
-  };
-
-  fetchFeaturedArtisans();
-}, []);
-
-  return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="light" />
-        <Navbar />
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
-        <View style={styles.hero}>
-
-          {/* Background image */}
-          <Image
-            source={require("../assets/images/download.jpeg")}
-            style={styles.backgroundImage}
-            resizeMode="cover"
-          />
-
-          {/* Dark overlay */}
-          <View style={styles.overlay} />
-
-          {/* Hero content */}
-          <View style={styles.content}>
-
-            {/* Badge */}
-            <View style={styles.badge}>
-              <Text style={styles.badgeIcon}>✓</Text>
-
-              <Text style={styles.badgeText}>
-                Nigeria's trusted artisan marketplace
-              </Text>
-            </View>
-
-            {/* Heading */}
-            <Text style={styles.title}>
-              Find the Right{" "}
-              <Text style={styles.orangeText}>
-                Artisan
-              </Text>
-              {"\n"}
-              Without the Guesswork.
-            </Text>
-
-            {/* Description */}
-            <Text style={styles.description}>
-              Find verified electricians, plumbers, mechanics,
-              cleaners, carpenters and other skilled
-              professionals — wherever you are in Nigeria.
-            </Text>
-
-            {/* Search panel */}
-            <View style={styles.searchPanel}>
-
-              <Text style={styles.searchTitle}>
-                Find an artisan
-              </Text>
-
-              <Text style={styles.searchSubtitle}>
-                Search an area or let us find artisans around you.
-              </Text>
-
-              {/* Profession */}
-              <ServiceSearch
-  value={selectedService}
-  onServiceChange={setSelectedService}
-/>
-
-              {/* Location */}
-              <LocationSelector
-  selectedLocation={selectedLocation}
-  onLocationChange={setSelectedLocation}
-/>
-{/* Search artisans */}
-<TouchableOpacity
-  activeOpacity={0.8}
-  style={styles.searchButton}
-  onPress={handleSearch}
->
-  <Text style={styles.searchButtonText}>
-    Search artisans
-  </Text>
-</TouchableOpacity>
-
-              {/* Find near me */}
-            <TouchableOpacity
-  activeOpacity={0.8}
-  style={[
-    styles.nearMeButton,
-    locationLoading && styles.disabledNearMeButton,
-  ]}
-  onPress={handleFindNearMe}
-  disabled={locationLoading}
->
-
-                <Text style={styles.nearMeIcon}>
-                  📍
-                </Text>
-
-                <Text style={styles.nearMeText}>
-  {locationLoading
-    ? "Finding your location..."
-    : "Find artisans near me"}
-</Text>
-
-              </TouchableOpacity>
-              <TouchableOpacity
-  activeOpacity={0.8}
-  style={styles.browseButton}
-  onPress={() => {
-    navigation.navigate("Workers", {
-      service: "",
-      location: {
-        state: "",
-        city: "",
-        lga: "",
-      },
+      service: selectedService,
+      location: selectedLocation,
       latitude: null,
       longitude: null,
     });
-  }}
->
-  <Text style={styles.browseButtonText}>
-    Browse all artisans
-  </Text>
-</TouchableOpacity>
-              
+  };
 
-            </View>
+  const handleFindNearMe = async () => {
+    try {
+      const coordinates = await getLocation();
 
-{/* ====================================
-    FEATURED ARTISANS
-===================================== */}
+      if (!coordinates) {
+        return;
+      }
 
-<View style={styles.featuredSection}>
-
-  <Text style={styles.sectionEyebrow}>
-    FEATURED ARTISANS
-  </Text>
-
-  <Text style={styles.featuredTitle}>
-    Find trusted professionals
-  </Text>
-
-  <Text style={styles.featuredSubtitle}>
-    Meet some of the skilled artisans
-    available on FindArtisans.
-  </Text>
-
-  {featuredLoading ? (
-    <View style={styles.featuredLoading}>
-      <ActivityIndicator
-        size="small"
-        color="#f97316"
-      />
-
-      <Text style={styles.featuredLoadingText}>
-        Loading artisans...
-      </Text>
-    </View>
-  ) : (
-    <>
-      {featuredArtisans.map((artisan) => (
-        <ArtisanCard
-          key={artisan._id}
-          artisan={artisan}
-          onPress={() =>
-            navigation.navigate(
-              "WorkerDetails",
-              {
-                id: artisan._id,
-              }
-            )
-          }
-        />
-      ))}
-    </>
-  )}
-
-  {!featuredLoading &&
-  featuredArtisans.length === 0 ? (
-    <Text style={styles.noFeaturedText}>
-      No artisans available yet.
-    </Text>
-  ) : null}
-
-  <TouchableOpacity
-    activeOpacity={0.8}
-    style={styles.viewAllButton}
-    onPress={() => {
       navigation.navigate("Workers", {
         service: "",
         location: {
@@ -322,125 +69,292 @@ useEffect(() => {
           city: "",
           lga: "",
         },
-        latitude: null,
-        longitude: null,
+        latitude: coordinates.latitude,
+        longitude: coordinates.longitude,
       });
-    }}
-  >
-    <Text style={styles.viewAllButtonText}>
-      View all artisans →
-    </Text>
-  </TouchableOpacity>
+    } catch (error) {
+      console.error("Find near me error:", error);
+    }
+  };
 
-</View>
+  // ==========================================
+  // FETCH FEATURED ARTISANS
+  // ==========================================
+  useEffect(() => {
+    const fetchFeaturedArtisans = async () => {
+      try {
+        setFeaturedLoading(true);
 
+        const params = new URLSearchParams();
+        params.append("page", "1");
+        params.append("limit", "4");
+
+        const url = `${process.env.EXPO_PUBLIC_API_URL}/users/workers/all?${params.toString()}`;
+
+        const response = await fetch(url);
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch featured artisans.");
+        }
+
+        const data = await response.json();
+
+        setFeaturedArtisans(data.workers || []);
+      } catch (error) {
+        console.error("Failed to fetch featured artisans:", error);
+      } finally {
+        setFeaturedLoading(false);
+      }
+    };
+
+    fetchFeaturedArtisans();
+  }, []);
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <StatusBar style="light" />
+      <Navbar />
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* HERO CONTAINER */}
+        <View style={styles.heroContainer}>
+          <ImageBackground
+            source={require("../assets/images/download.jpeg")}
+            style={styles.heroBackground}
+            resizeMode="cover"
+          >
+            {/* Dark tint overlay */}
+            <View style={styles.heroOverlay}>
+              <View style={styles.content}>
+                {/* Badge */}
+                <View style={styles.badge}>
+                  <Text style={styles.badgeIcon}>✓</Text>
+                  <Text style={styles.badgeText}>
+                    Nigeria's trusted artisan marketplace
+                  </Text>
+                </View>
+
+                {/* Heading */}
+                <Text style={styles.title}>
+                  Find the Right <Text style={styles.orangeText}>Artisan</Text>
+                  {"\n"}
+                  Without the Guesswork.
+                </Text>
+
+                {/* Description */}
+                <Text style={styles.description}>
+                  Find verified electricians, plumbers, mechanics, cleaners,
+                  carpenters and other skilled professionals — wherever you are in
+                  Nigeria.
+                </Text>
+
+                {/* Search panel */}
+                <View style={styles.searchPanel}>
+                  <Text style={styles.searchTitle}>Find an artisan</Text>
+
+                  <Text style={styles.searchSubtitle}>
+                    Search an area or let us find artisans around you.
+                  </Text>
+
+                  {/* Service Search */}
+                  <View style={styles.dropdownWrapper}>
+                    <ServiceSearch
+                      value={selectedService}
+                      onServiceChange={setSelectedService}
+                    />
                   </View>
 
-      </View>
+                  {/* Location Selector */}
+                  <View style={styles.dropdownWrapper}>
+                    <LocationSelector
+                      selectedLocation={selectedLocation}
+                      onLocationChange={setSelectedLocation}
+                    />
+                  </View>
 
-      <TrustIndicators />
+                  {/* Search artisans */}
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    style={styles.searchButton}
+                    onPress={handleSearch}
+                  >
+                    <Text style={styles.searchButtonText}>Search artisans</Text>
+                  </TouchableOpacity>
 
-      <FindWaysSection
-        onBrowse={() => {
-          navigation.navigate("Workers", {
-            service: "",
-            location: {
-              state: "",
-              city: "",
-              lga: "",
-            },
-            latitude: null,
-            longitude: null,
-          });
-        }}
-      />
+                  {/* Find near me */}
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    style={[
+                      styles.nearMeButton,
+                      locationLoading && styles.disabledNearMeButton,
+                    ]}
+                    onPress={handleFindNearMe}
+                    disabled={locationLoading}
+                  >
+                    <Text style={styles.nearMeIcon}>📍</Text>
+                    <Text style={styles.nearMeText}>
+                      {locationLoading
+                        ? "Finding your location..."
+                        : "Find artisans near me"}
+                    </Text>
+                  </TouchableOpacity>
 
-      <HowItWorks />
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    style={styles.browseButton}
+                    onPress={() => {
+                      navigation.navigate("Workers", {
+                        service: "",
+                        location: { state: "", city: "", lga: "" },
+                        latitude: null,
+                        longitude: null,
+                      });
+                    }}
+                  >
+                    <Text style={styles.browseButtonText}>
+                      Browse all artisans
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </ImageBackground>
+        </View>
 
-<WhyFindArtisans
-  onBrowse={() => {
-    navigation.navigate("Workers", {
-      service: "",
-      location: {
-        state: "",
-        city: "",
-        lga: "",
-      },
-      latitude: null,
-      longitude: null,
-    });
-  }}
-/>
+        {/* FEATURED ARTISANS */}
+        <View style={styles.featuredSection}>
+          <Text style={styles.sectionEyebrow}>FEATURED ARTISANS</Text>
 
-<PopularCategories
-  onViewAll={() => {
-    navigation.navigate("Workers", {
-      service: "",
-      location: {
-        state: "",
-        city: "",
-        lga: "",
-      },
-      latitude: null,
-      longitude: null,
-    });
-  }}
-  onCategoryPress={(category) => {
-    navigation.navigate("Workers", {
-      service: category.replace(/s$/, ""),
-      location: {
-        state: "",
-        city: "",
-        lga: "",
-      },
-      latitude: null,
-      longitude: null,
-    });
-  }}
-/>
+          <Text style={styles.featuredTitle}>Find trusted professionals</Text>
 
-<Testimonials />
+          <Text style={styles.featuredSubtitle}>
+            Meet some of the skilled artisans available on FindArtisans.
+          </Text>
 
-<FinalCTA
-  onBrowse={() => {
-    navigation.navigate("Workers", {
-      service: "",
-      location: {
-        state: "",
-        city: "",
-        lga: "",
-      },
-      latitude: null,
-      longitude: null,
-    });
-  }}
-  onJoin={() => {
-    navigation.navigate("Register");
-  }}
-/>
+          {featuredLoading ? (
+            <View style={styles.featuredLoading}>
+              <ActivityIndicator size="small" color="#f97316" />
+              <Text style={styles.featuredLoadingText}>
+                Loading artisans...
+              </Text>
+            </View>
+          ) : (
+            <>
+              {featuredArtisans.map((artisan) => (
+                <ArtisanCard
+                  key={artisan._id}
+                  artisan={artisan}
+                  onPress={() =>
+                    navigation.navigate("WorkerDetails", {
+                      id: artisan._id,
+                    })
+                  }
+                />
+              ))}
+            </>
+          )}
 
-<Footer
-  onHome={() => {
-    // Already on Home
-  }}
-  onWorkers={() => {
-    navigation.navigate("Workers", {
-      service: "",
-      location: {
-        state: "",
-        city: "",
-        lga: "",
-      },
-      latitude: null,
-      longitude: null,
-    });
-  }}
-  onRegister={() => {
-    navigation.navigate("Register");
-  }}
-/>
+          {!featuredLoading && featuredArtisans.length === 0 ? (
+            <Text style={styles.noFeaturedText}>
+              No artisans available yet.
+            </Text>
+          ) : null}
 
-    </ScrollView>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            style={styles.viewAllButton}
+            onPress={() => {
+              navigation.navigate("Workers", {
+                service: "",
+                location: { state: "", city: "", lga: "" },
+                latitude: null,
+                longitude: null,
+              });
+            }}
+          >
+            <Text style={styles.viewAllButtonText}>View all artisans →</Text>
+          </TouchableOpacity>
+        </View>
+
+        <TrustIndicators />
+
+        <FindWaysSection
+          onBrowse={() => {
+            navigation.navigate("Workers", {
+              service: "",
+              location: { state: "", city: "", lga: "" },
+              latitude: null,
+              longitude: null,
+            });
+          }}
+        />
+
+        <HowItWorks />
+
+        <WhyFindArtisans
+          onBrowse={() => {
+            navigation.navigate("Workers", {
+              service: "",
+              location: { state: "", city: "", lga: "" },
+              latitude: null,
+              longitude: null,
+            });
+          }}
+        />
+
+        <PopularCategories
+          onViewAll={() => {
+            navigation.navigate("Workers", {
+              service: "",
+              location: { state: "", city: "", lga: "" },
+              latitude: null,
+              longitude: null,
+            });
+          }}
+          onCategoryPress={(category) => {
+            navigation.navigate("Workers", {
+              service: category.replace(/s$/, ""),
+              location: { state: "", city: "", lga: "" },
+              latitude: null,
+              longitude: null,
+            });
+          }}
+        />
+
+        <Testimonials />
+
+        <FinalCTA
+          onBrowse={() => {
+            navigation.navigate("Workers", {
+              service: "",
+              location: { state: "", city: "", lga: "" },
+              latitude: null,
+              longitude: null,
+            });
+          }}
+          onJoin={() => {
+            navigation.navigate("Register");
+          }}
+        />
+
+        <Footer
+          onHome={() => {}}
+          onWorkers={() => {
+            navigation.navigate("Workers", {
+              service: "",
+              location: { state: "", city: "", lga: "" },
+              latitude: null,
+              longitude: null,
+            });
+          }}
+          onRegister={() => {
+            navigation.navigate("Register");
+          }}
+        />
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -455,27 +369,23 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
 
-  hero: {
-    position: "relative",
-    overflow: "hidden",
-    minHeight: 850,
-  },
-
-  backgroundImage: {
-    ...StyleSheet.absoluteFillObject,
+  heroContainer: {
     width: "100%",
-    height: "100%",
   },
 
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0, 0, 0, 0.80)",
+  heroBackground: {
+    width: "100%",
+  },
+
+  heroOverlay: {
+    width: "100%",
+    backgroundColor: "rgba(0, 0, 0, 0.82)",
   },
 
   content: {
     paddingHorizontal: 20,
-    paddingTop: 70,
-    paddingBottom: 50,
+    paddingTop: 40,
+    paddingBottom: 40,
     alignItems: "center",
   },
 
@@ -506,8 +416,8 @@ const styles = StyleSheet.create({
 
   title: {
     color: "#ffffff",
-    fontSize: 38,
-    lineHeight: 46,
+    fontSize: 34,
+    lineHeight: 42,
     fontWeight: "800",
     textAlign: "center",
   },
@@ -533,6 +443,13 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255, 255, 255, 0.10)",
     borderWidth: 1,
     borderColor: "rgba(255, 255, 255, 0.12)",
+    elevation: 3, // Required for Android view layering
+  },
+
+  dropdownWrapper: {
+    zIndex: 10,
+    elevation: 10,
+    marginBottom: 10,
   },
 
   searchTitle: {
@@ -547,65 +464,6 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     marginTop: 5,
     marginBottom: 16,
-  },
-
-  inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#ffffff",
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    minHeight: 54,
-  },
-
-  inputIcon: {
-    fontSize: 18,
-    marginRight: 10,
-  },
-
-  input: {
-    flex: 1,
-    color: "#111827",
-    fontSize: 15,
-    paddingVertical: 14,
-  },
-
-  locationSelector: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#ffffff",
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    minHeight: 64,
-    marginTop: 12,
-  },
-
-  locationIcon: {
-    fontSize: 20,
-    marginRight: 12,
-  },
-
-  locationTextContainer: {
-    flex: 1,
-  },
-
-  locationTitle: {
-    color: "#111827",
-    fontSize: 15,
-    fontWeight: "600",
-  },
-
-  locationSubtitle: {
-    color: "#6b7280",
-    fontSize: 12,
-    marginTop: 3,
-  },
-
-  chevron: {
-    color: "#6b7280",
-    fontSize: 28,
-    fontWeight: "300",
-    marginLeft: 8,
   },
 
   nearMeButton: {
@@ -630,104 +488,106 @@ const styles = StyleSheet.create({
   },
 
   searchButton: {
-  alignItems: "center",
-  justifyContent: "center",
-  backgroundColor: "#f97316",
-  borderRadius: 14,
-  minHeight: 54,
-  marginTop: 12,
-},
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#f97316",
+    borderRadius: 14,
+    minHeight: 54,
+    marginTop: 12,
+  },
 
-searchButtonText: {
-  color: "#ffffff",
-  fontSize: 15,
-  fontWeight: "700",
-},
+  searchButtonText: {
+    color: "#ffffff",
+    fontSize: 15,
+    fontWeight: "700",
+  },
 
-disabledNearMeButton: {
-  opacity: 0.7,
-},
+  disabledNearMeButton: {
+    opacity: 0.7,
+  },
 
-browseButton: {
-  alignItems: "center",
-  justifyContent: "center",
-  backgroundColor: "rgba(255, 255, 255, 0.08)",
-  borderRadius: 14,
-  minHeight: 54,
-  marginTop: 12,
-  borderWidth: 1,
-  borderColor: "rgba(255, 255, 255, 0.12)",
-},
+  browseButton: {
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.08)",
+    borderRadius: 14,
+    minHeight: 54,
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.12)",
+  },
 
-browseButtonText: {
-  color: "#ffffff",
-  fontSize: 15,
-  fontWeight: "700",
-},
+  browseButtonText: {
+    color: "#ffffff",
+    fontSize: 15,
+    fontWeight: "700",
+  },
 
-featuredSection: {
-  width: "100%",
-  paddingHorizontal: 20,
-  paddingBottom: 35,
-},
+  featuredSection: {
+    width: "100%",
+    paddingHorizontal: 20,
+    paddingTop: 30,
+    paddingBottom: 35,
+    backgroundColor: "#030712",
+  },
 
-sectionEyebrow: {
-  color: "#f97316",
-  fontSize: 11,
-  fontWeight: "800",
-  letterSpacing: 1,
-},
+  sectionEyebrow: {
+    color: "#f97316",
+    fontSize: 11,
+    fontWeight: "800",
+    letterSpacing: 1,
+  },
 
-featuredTitle: {
-  color: "#ffffff",
-  fontSize: 25,
-  fontWeight: "800",
-  marginTop: 6,
-},
+  featuredTitle: {
+    color: "#ffffff",
+    fontSize: 25,
+    fontWeight: "800",
+    marginTop: 6,
+  },
 
-featuredSubtitle: {
-  color: "#9ca3af",
-  fontSize: 13,
-  lineHeight: 20,
-  marginTop: 7,
-  marginBottom: 18,
-},
+  featuredSubtitle: {
+    color: "#9ca3af",
+    fontSize: 13,
+    lineHeight: 20,
+    marginTop: 7,
+    marginBottom: 18,
+  },
 
-featuredLoading: {
-  alignItems: "center",
-  justifyContent: "center",
-  paddingVertical: 30,
-},
+  featuredLoading: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 30,
+  },
 
-featuredLoadingText: {
-  color: "#9ca3af",
-  fontSize: 13,
-  marginTop: 10,
-},
+  featuredLoadingText: {
+    color: "#9ca3af",
+    fontSize: 13,
+    marginTop: 10,
+  },
 
-noFeaturedText: {
-  color: "#6b7280",
-  fontSize: 13,
-  textAlign: "center",
-  paddingVertical: 25,
-},
+  noFeaturedText: {
+    color: "#6b7280",
+    fontSize: 13,
+    textAlign: "center",
+    paddingVertical: 25,
+  },
 
-viewAllButton: {
-  alignItems: "center",
-  justifyContent: "center",
-  minHeight: 50,
-  borderRadius: 12,
-  borderWidth: 1,
-  borderColor: "#374151",
-  backgroundColor: "#111827",
-  marginTop: 8,
-},
+  viewAllButton: {
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 50,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#374151",
+    backgroundColor: "#111827",
+    marginTop: 12,
+  },
 
-viewAllButtonText: {
-  color: "#f97316",
-  fontSize: 14,
-  fontWeight: "800",
-},
+  viewAllButtonText: {
+    color: "#f97316",
+    fontSize: 14,
+    fontWeight: "800",
+  },
 });
 
 export default HomeScreen;
