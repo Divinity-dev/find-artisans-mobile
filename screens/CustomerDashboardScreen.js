@@ -5,13 +5,13 @@ import React, {
 
 import {
   ActivityIndicator,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Ionicons } from "@expo/vector-icons";
 
@@ -30,7 +30,6 @@ const CustomerDashboardScreen = ({
   // ======================================
 
   const {
-    user,
     token,
     isAuthenticated,
   } = useAuth();
@@ -102,7 +101,6 @@ const CustomerDashboardScreen = ({
       try {
 
         setLoading(true);
-
         setError("");
 
 
@@ -130,7 +128,7 @@ const CustomerDashboardScreen = ({
 
           throw new Error(
             profileData.message ||
-              "Failed to load profile"
+            "Failed to load profile"
           );
 
         }
@@ -169,7 +167,7 @@ const CustomerDashboardScreen = ({
 
           throw new Error(
             jobsData.message ||
-              "Failed to load jobs"
+            "Failed to load jobs"
           );
 
         }
@@ -195,7 +193,7 @@ const CustomerDashboardScreen = ({
 
         setError(
           error.message ||
-            "Failed to load dashboard"
+          "Failed to load dashboard"
         );
 
       } finally {
@@ -365,6 +363,7 @@ const CustomerDashboardScreen = ({
         job.status === "in-progress"
     );
 
+
   const completedJobs =
     jobs.filter(
       (job) =>
@@ -405,53 +404,46 @@ const CustomerDashboardScreen = ({
 
         <View style={styles.header}>
 
-          <View style={styles.headerText}>
+          <Text style={styles.title}>
+            Customer Dashboard
+          </Text>
 
-            <Text style={styles.title}>
-              Customer Dashboard
-            </Text>
-
-            <Text style={styles.welcome}>
-              Welcome{" "}
-              {profile?.fullName ||
-                user?.fullName ||
-                "Customer"}
-            </Text>
+          <Text style={styles.subtitle}>
+            Welcome {profile?.fullName || "Customer"}
+          </Text>
 
 
-            {/* TRUST SCORE */}
+          {/* TRUST SCORE */}
 
-            {trustScore !== undefined &&
-              trustScore !== null && (
+          {trustScore !== undefined &&
+            trustScore !== null && (
 
-              <View
-                style={styles.trustRow}
+            <View
+              style={styles.trustRow}
+            >
+
+              <Ionicons
+                name="star"
+                size={17}
+                color="#facc15"
+              />
+
+              <Text
+                style={styles.trustText}
               >
-
-                <Ionicons
-                  name="star"
-                  size={17}
-                  color="#facc15"
-                />
+                Trust Score:{" "}
 
                 <Text
-                  style={styles.trustText}
+                  style={styles.trustScore}
                 >
-                  Trust Score:{" "}
-                  <Text
-                    style={
-                      styles.trustScore
-                    }
-                  >
-                    {trustScore}
-                  </Text>
+                  {trustScore}
                 </Text>
 
-              </View>
+              </Text>
 
-            )}
+            </View>
 
-          </View>
+          )}
 
         </View>
 
@@ -464,17 +456,19 @@ const CustomerDashboardScreen = ({
           style={styles.actionRow}
         >
 
+          {/* EDIT PROFILE */}
+
           <TouchableOpacity
             style={styles.secondaryButton}
             onPress={() =>
               navigation.navigate(
-                "CustomerEdit"
+                "CustomerProfileEdit"
               )
             }
           >
 
             <Ionicons
-              name="person-outline"
+              name="create-outline"
               size={18}
               color="#ffffff"
             />
@@ -487,6 +481,8 @@ const CustomerDashboardScreen = ({
 
           </TouchableOpacity>
 
+
+          {/* POST JOB */}
 
           <TouchableOpacity
             style={styles.primaryButton}
@@ -520,6 +516,8 @@ const CustomerDashboardScreen = ({
 
         <View style={styles.statsRow}>
 
+          {/* TOTAL JOBS */}
+
           <View style={styles.statCard}>
 
             <Ionicons
@@ -543,6 +541,8 @@ const CustomerDashboardScreen = ({
           </View>
 
 
+          {/* ACTIVE */}
+
           <View style={styles.statCard}>
 
             <Ionicons
@@ -565,6 +565,8 @@ const CustomerDashboardScreen = ({
 
           </View>
 
+
+          {/* COMPLETED */}
 
           <View style={styles.statCard}>
 
@@ -600,6 +602,8 @@ const CustomerDashboardScreen = ({
 
         <View style={styles.tabsContainer}>
 
+          {/* JOBS */}
+
           <TouchableOpacity
             style={[
               styles.tab,
@@ -633,6 +637,8 @@ const CustomerDashboardScreen = ({
 
           </TouchableOpacity>
 
+
+          {/* COMPLAINT */}
 
           <TouchableOpacity
             style={[
@@ -672,6 +678,8 @@ const CustomerDashboardScreen = ({
 
           </TouchableOpacity>
 
+
+          {/* MY COMPLAINTS */}
 
           <TouchableOpacity
             style={[
@@ -779,14 +787,18 @@ const CustomerDashboardScreen = ({
 
             ) : (
 
-              <Text
-                style={styles.infoText}
-              >
-                You have {jobs.length}{" "}
-                {jobs.length === 1
-                  ? "job"
-                  : "jobs"}.
-              </Text>
+              <View>
+
+                <Text
+                  style={styles.infoText}
+                >
+                  You have {jobs.length}{" "}
+                  {jobs.length === 1
+                    ? "job"
+                    : "jobs"}.
+                </Text>
+
+              </View>
 
             )}
 
@@ -948,17 +960,13 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
   },
 
-  headerText: {
-    flex: 1,
-  },
-
   title: {
     color: "#ffffff",
     fontSize: 28,
     fontWeight: "700",
   },
 
-  welcome: {
+  subtitle: {
     marginTop: 7,
     color: "#9ca3af",
     fontSize: 15,

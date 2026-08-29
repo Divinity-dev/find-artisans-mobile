@@ -6,14 +6,15 @@ import React, {
 
 import {
   ActivityIndicator,
+  Animated,
   FlatList,
-  SafeAreaView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { StatusBar } from "expo-status-bar";
 
@@ -25,9 +26,10 @@ import useGeolocation from "../hooks/useGeolocation";
 const WORKERS_PER_PAGE = 12;
 
 const DISTANCE_OPTIONS = [
+  { value: "1", label: "1 km" },
+  { value: "3", label: "3 km" },
   { value: "5", label: "5 km" },
   { value: "10", label: "10 km" },
-  { value: "25", label: "25 km" },
 ];
 
 const WorkersScreen = ({ route, navigation }) => {
@@ -69,7 +71,7 @@ const WorkersScreen = ({ route, navigation }) => {
   // RADIUS
   // =====================================================
 
-  const [radius, setRadius] = useState("25");
+  const [radius, setRadius] = useState("5");
 
   // =====================================================
   // FILTER UI
@@ -120,6 +122,36 @@ const WorkersScreen = ({ route, navigation }) => {
     getLocation,
   } = useGeolocation();
 
+  const compassRotation = useState(
+  new Animated.Value(0)
+)[0];
+
+useEffect(() => {
+  if (!locationLoading) {
+    compassRotation.stopAnimation();
+    compassRotation.setValue(0);
+    return;
+  }
+
+  Animated.loop(
+    Animated.timing(compassRotation, {
+      toValue: 1,
+      duration: 1000,
+      useNativeDriver: true,
+    })
+  ).start();
+
+  return () => {
+    compassRotation.stopAnimation();
+  };
+}, [locationLoading]);
+
+const compassRotate =
+  compassRotation.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0deg", "360deg"],
+  });
+
   // =====================================================
   // COORDINATES
   // =====================================================
@@ -146,169 +178,101 @@ const WorkersScreen = ({ route, navigation }) => {
   // FETCH ARTISANS
   // =====================================================
 
-  const fetchArtisans = useCallback(
-    async (pageNumber = 1, append = false) => {
-      try {
-        if (append) {
-          setLoadingMore(true);
-        } else {
-          setLoading(true);
-          setError("");
-        }
+const fetchArtisans = useCallback(
+  async (pageNumber = 1, append = false) => {
+    try {
+      if (append) {
+        setLoadingMore(true);
+      } else {
+        setLoading(true);
+        setError("");
+      }
 
-        const params = new URLSearchParams();
+      const params = new URLSearchParams();
 
-        // Pagination
-        params.append(
-          "page",
-          String(pageNumber)
-        );
+      // Pagination
+      params.append("page", String(pageNumber));
+      params.append("limit", String(WORKERS_PER_PAGE));
 
-        params.append(
-          "limit",
-          String(WORKERS_PER_PAGE)
-        );
+      // Search term
+      if (search.trim()) {
+        params.append("search", search.trim());
+      }
 
-        // Search
-        if (search.trim()) {
-          params.append(
-            "search",
-            search.trim()
-          );
-        }
-
-        // State
+      // If user is searching by precise coordinates, do NOT append text-based location parameters
+      if (hasCoordinates) {
+        params.append("latitude", String(latitude));
+        params.append("longitude", String(longitude));
+        params.append("radius", radius);
+      } else {
+        // Fall back to administrative text filters if coordinates are NOT set
         if (selectedLocation.state) {
-          params.append(
-            "state",
-            selectedLocation.state
-          );
+          params.append("state", selectedLocation.state);
         }
-
-        // City
         if (selectedLocation.city) {
-          params.append(
-            "city",
-            selectedLocation.city
-          );
+          params.append("city", selectedLocation.city);
         }
-
-        // LGA
         if (selectedLocation.lga) {
-          params.append(
-            "localGovernment",
-            selectedLocation.lga
-          );
-        }
-
-        // Coordinates
-        if (hasCoordinates) {
-          params.append(
-            "latitude",
-            String(latitude)
-          );
-
-          params.append(
-            "longitude",
-            String(longitude)
-          );
-
-          params.append(
-            "radius",
-            radius
-          );
-        }
-
-        const url =
-          `${process.env.EXPO_PUBLIC_API_URL}/users/workers/all?${params.toString()}`;
-
-        console.log(
-          "Fetching artisans:",
-          url
-        );
-
-        const response = await fetch(url);
-
-        if (!response.ok) {
-          throw new Error(
-            "Failed to fetch artisans."
-          );
-        }
-
-        const data = await response.json();
-
-        console.log(
-          "Artisans response:",
-          data
-        );
-
-        const workers =
-          data.workers || [];
-
-        // Pagination information
-        setPage(
-          data.currentPage ||
-            pageNumber
-        );
-
-        setTotalPages(
-          data.totalPages || 1
-        );
-
-        setTotal(
-          Number(data.total) || 0
-        );
-
-        // Add or replace workers
-        if (append) {
-          setArtisans(
-            (previous) => [
-              ...previous,
-              ...workers,
-            ]
-          );
-        } else {
-          setArtisans(workers);
-        }
-      } catch (fetchError) {
-        console.error(
-          "Fetch artisans error:",
-          fetchError
-        );
-
-        if (!append) {
-          setError(
-            "Unable to load artisans. Please try again."
-          );
-        }
-      } finally {
-        if (append) {
-          setLoadingMore(false);
-        } else {
-          setLoading(false);
+          params.append("localGovernment", selectedLocation.lga);
         }
       }
-    },
-    [
-      search,
-      selectedLocation,
-      latitude,
-      longitude,
-      radius,
-      hasCoordinates,
-    ]
-  );
+
+      const url = `${process.env.EXPO_PUBLIC_API_URL}/users/workers/all?${params.toString()}`;
+
+      console.log("Fetching artisans:", url);
+
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch artisans.");
+      }
+
+      const data = await response.json();
+
+      const workers = data.workers || [];
+
+      setPage(data.currentPage || pageNumber);
+      setTotalPages(data.totalPages || 1);
+      setTotal(Number(data.total) || 0);
+
+      if (append) {
+        setArtisans((previous) => [...previous, ...workers]);
+      } else {
+        setArtisans(workers);
+      }
+    } catch (fetchError) {
+      console.error("Fetch artisans error:", fetchError);
+
+      if (!append) {
+        setError("Unable to load artisans. Please try again.");
+      }
+    } finally {
+      if (append) {
+        setLoadingMore(false);
+      } else {
+        setLoading(false);
+      }
+    }
+  },
+  [
+    search,
+    selectedLocation,
+    latitude,
+    longitude,
+    radius,
+    hasCoordinates,
+  ]
+);
 
   // =====================================================
   // FETCH WHEN FILTERS CHANGE
   // =====================================================
 
   useEffect(() => {
-    setPage(1);
-    setArtisans([]);
-
-    fetchArtisans(1, false);
-  }, [fetchArtisans]);
+  setPage(1);
+  setArtisans([]);
+  fetchArtisans(1, false);
+}, [fetchArtisans]);
 
   // =====================================================
   // LOCATION CHANGE
@@ -336,7 +300,6 @@ const WorkersScreen = ({ route, navigation }) => {
       try {
         const coordinates =
           await getLocation();
-
         if (!coordinates) {
           return;
         }
@@ -367,11 +330,9 @@ const WorkersScreen = ({ route, navigation }) => {
   // CHANGE RADIUS
   // =====================================================
 
-  const handleRadiusChange = (
-    value
-  ) => {
-    setRadius(value);
-  };
+ const handleRadiusChange = (value) => {
+  setRadius(value);
+};
 
   // =====================================================
   // LOAD MORE
@@ -400,17 +361,21 @@ const WorkersScreen = ({ route, navigation }) => {
   // =====================================================
 
   const clearFilters = () => {
-    setSearch("");
+  setSearch("");
 
-    setSelectedLocation({
-      state: "",
-      city: "",
-      lga: "",
-    });
+  setSelectedLocation({
+    state: "",
+    city: "",
+    lga: "",
+  });
 
-    setLatitude(null);
-    setLongitude(null);
-  };
+  setLatitude(null);
+  setLongitude(null);
+
+  setRadius("5");
+
+  setPage(1);
+};
 
   // =====================================================
   // RETRY
@@ -420,15 +385,22 @@ const WorkersScreen = ({ route, navigation }) => {
     fetchArtisans(1, false);
   };
 
-  // =====================================================
-  // ACTIVE FILTER COUNT
-  // =====================================================
+ // =====================================================
+// ACTIVE FILTER COUNT
+// =====================================================
 
-  const activeFilterCount =
-    Number(Boolean(search.trim())) +
-    Number(Boolean(selectedLocation.state)) +
-    Number(Boolean(selectedLocation.city)) +
-    Number(Boolean(selectedLocation.lga));
+const hasLocationFilter =
+  hasCoordinates ||
+  Boolean(selectedLocation.state) ||
+  Boolean(selectedLocation.city) ||
+  Boolean(selectedLocation.lga);
+
+const activeFilterCount =
+  Number(Boolean(search.trim())) +
+  Number(Boolean(selectedLocation.state)) +
+  Number(Boolean(selectedLocation.city)) +
+  Number(Boolean(selectedLocation.lga)) +
+  Number(hasCoordinates);
 
   // =====================================================
   // LOADING SCREEN
@@ -722,23 +694,32 @@ const WorkersScreen = ({ route, navigation }) => {
                     locationLoading
                   }
                 >
-                  <Text
-                    style={
-                      styles.myLocationIcon
-                    }
-                  >
-                    📍
-                  </Text>
+                  {locationLoading ? (
+  <Animated.Text
+    style={[
+      styles.myLocationIcon,
+      {
+        transform: [
+          {
+            rotate: compassRotate,
+          },
+        ],
+      },
+    ]}
+  >
+    🧭
+  </Animated.Text>
+) : (
+  <Text style={styles.myLocationIcon}>
+    📍
+  </Text>
+)}
 
-                  <Text
-                    style={
-                      styles.myLocationText
-                    }
-                  >
-                    {locationLoading
-                      ? "Finding your location..."
-                      : "Search with my location"}
-                  </Text>
+<Text style={styles.myLocationText}>
+  {locationLoading
+    ? "Finding your location..."
+    : "Search with my location"}
+</Text>
                 </TouchableOpacity>
 
                 {locationError ? (
@@ -755,63 +736,51 @@ const WorkersScreen = ({ route, navigation }) => {
 
             {/* RESULTS HEADER */}
 
-            <View
-              style={styles.resultsHeader}
-            >
-              <View
-                style={
-                  styles.resultsHeaderText
-                }
-              >
-                <Text
-                  style={
-                    styles.resultsTitle
-                  }
-                >
-                  {hasCoordinates
-                    ? "Artisans Near You"
-                    : activeFilterCount
-                    ? "Matching Artisans"
-                    : "Verified Workers"}
-                </Text>
+            <View style={styles.resultsHeader}>
+  <View style={styles.resultsHeaderText}>
+    <Text style={styles.resultsTitle}>
+      {hasCoordinates
+        ? "Artisans Near You"
+        : activeFilterCount
+        ? "Matching Artisans"
+        : "Verified Workers"}
+    </Text>
 
-                <Text
-                  style={
-                    styles.resultsSubtitle
-                  }
-                >
-                  {hasCoordinates
-                    ? `Professionals within ${radius} km of your location`
-                    : activeFilterCount
-                    ? "Results matching your current search"
-                    : "Discover skilled professionals across Nigeria"}
-                </Text>
-              </View>
+    <Text style={styles.resultsSubtitle}>
+      {hasCoordinates
+        ? `Professionals within ${radius} km of your location`
+        : activeFilterCount
+        ? "Results matching your current search"
+        : "Discover skilled professionals across Nigeria"}
+    </Text>
+  </View>
 
-              <View
-                style={
-                  styles.countContainer
-                }
-              >
-                <Text
-                  style={
-                    styles.countNumber
-                  }
-                >
-                  {total}
-                </Text>
+  <View style={styles.resultsActions}>
+  <View style={styles.countContainer}>
+    <Text style={styles.countNumber}>
+      {total}
+    </Text>
 
-                <Text
-                  style={
-                    styles.countText
-                  }
-                >
-                  {total === 1
-                    ? "artisan"
-                    : "artisans"}
-                </Text>
-              </View>
-            </View>
+    <Text style={styles.countText}>
+      {total === 1
+        ? "artisan"
+        : "artisans"}
+    </Text>
+  </View>
+
+  {activeFilterCount > 0 ? (
+    <TouchableOpacity
+      activeOpacity={0.8}
+      onPress={clearFilters}
+      style={styles.clearFiltersButton}
+    >
+      <Text style={styles.clearFiltersText}>
+        Clear Filters
+      </Text>
+    </TouchableOpacity>
+  ) : null}
+</View>
+</View>
 
             {/* LOCATION BANNER */}
 
@@ -1373,6 +1342,26 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontWeight: "700",
   },
+
+  resultsActions: {
+  alignItems: "flex-end",
+  gap: 8,
+},
+
+clearFiltersButton: {
+  paddingHorizontal: 10,
+  paddingVertical: 6,
+  borderRadius: 8,
+  backgroundColor: "#111827",
+  borderWidth: 1,
+  borderColor: "#374151",
+},
+
+clearFiltersText: {
+  color: "#9ca3af",
+  fontSize: 12,
+  fontWeight: "700",
+},
 });
 
 export default WorkersScreen;

@@ -25,6 +25,7 @@ const Navbar = () => {
     logout,
   } = useAuth();
 
+
   // ======================================
   // NAVIGATION
   // ======================================
@@ -33,6 +34,7 @@ const Navbar = () => {
     setIsOpen(false);
     navigation.navigate(screen);
   };
+
 
   // ======================================
   // LOGOUT
@@ -46,6 +48,7 @@ const Navbar = () => {
     navigation.navigate("Home");
   };
 
+
   // ======================================
   // DASHBOARD
   // ======================================
@@ -54,16 +57,43 @@ const Navbar = () => {
     setIsOpen(false);
 
     if (user?.role === "admin") {
-      // We'll add this screen later
-      // navigation.navigate("Admin");
+
+      // Admin dashboard will be added later
+
     } else if (user?.role === "worker") {
-      // We'll add this screen later
-      // navigation.navigate("WorkersDashboard");
+
+      navigation.navigate("WorkerDashboard");
+
     } else {
-      // We'll add this screen later
-      // navigation.navigate("CustomersDashboard");
+
+      navigation.navigate("CustomerDashboard");
+
     }
   };
+
+
+  // ======================================
+  // PROFILE
+  // ======================================
+
+  const handleProfile = () => {
+    setIsOpen(false);
+
+    if (user?.role === "worker") {
+
+      navigation.navigate("WorkerProfileEdit");
+
+    } else if (user?.role === "customer") {
+
+      navigation.navigate("CustomerProfile");
+
+    } else if (user?.role === "admin") {
+
+      // Admin profile will be added later
+
+    }
+  };
+
 
   return (
     <>
@@ -88,31 +118,35 @@ const Navbar = () => {
           </Text>
         </TouchableOpacity>
 
+
         {/* RIGHT SIDE */}
 
         <View style={styles.rightContainer}>
 
+          {/* PROFILE IMAGE */}
+
           {isAuthenticated && (
-  <TouchableOpacity
-    onPress={() => setIsOpen(true)}
-    style={styles.profileButton}
-  >
-    {user?.profilePhoto ? (
-      <Image
-        source={{
-          uri: user.profilePhoto,
-        }}
-        style={styles.profileImage}
-      />
-    ) : (
-      <View style={styles.profilePlaceholder}>
-        <Text style={styles.profileIcon}>
-          👤
-        </Text>
-      </View>
-    )}
-  </TouchableOpacity>
-)}
+            <TouchableOpacity
+              onPress={() => setIsOpen(true)}
+              style={styles.profileButton}
+            >
+              {user?.profilePhoto ? (
+                <Image
+                  source={{
+                    uri: user.profilePhoto,
+                  }}
+                  style={styles.profileImage}
+                />
+              ) : (
+                <View style={styles.profilePlaceholder}>
+                  <Text style={styles.profileIcon}>
+                    👤
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          )}
+
 
           {/* MENU BUTTON */}
 
@@ -128,6 +162,7 @@ const Navbar = () => {
         </View>
       </View>
 
+
       {/* ======================================
           MOBILE MENU
       ====================================== */}
@@ -138,6 +173,7 @@ const Navbar = () => {
         animationType="fade"
         onRequestClose={() => setIsOpen(false)}
       >
+
         <Pressable
           style={styles.modalOverlay}
           onPress={() => setIsOpen(false)}
@@ -155,6 +191,7 @@ const Navbar = () => {
             <View style={styles.menuHeader}>
 
               <View style={styles.menuLogo}>
+
                 <Text style={styles.logoFind}>
                   Find
                 </Text>
@@ -162,7 +199,9 @@ const Navbar = () => {
                 <Text style={styles.logoArtisans}>
                   Artisans
                 </Text>
+
               </View>
+
 
               <TouchableOpacity
                 onPress={() => setIsOpen(false)}
@@ -174,11 +213,13 @@ const Navbar = () => {
 
             </View>
 
+
             {/* ======================================
                 NAVIGATION LINKS
             ====================================== */}
 
             <View style={styles.linksContainer}>
+
 
               {/* HOME */}
 
@@ -193,6 +234,7 @@ const Navbar = () => {
                 </Text>
               </TouchableOpacity>
 
+
               {/* FIND WORKERS */}
 
               <TouchableOpacity
@@ -206,18 +248,48 @@ const Navbar = () => {
                 </Text>
               </TouchableOpacity>
 
+
               {/* JOBS */}
 
-<TouchableOpacity
-  style={styles.navLink}
-  onPress={() =>
-    handleNavigation("Jobs")
-  }
->
-  <Text style={styles.navLinkText}>
-    Jobs
-  </Text>
-</TouchableOpacity>
+              <TouchableOpacity
+                style={styles.navLink}
+                onPress={() =>
+                  handleNavigation("Jobs")
+                }
+              >
+                <Text style={styles.navLinkText}>
+                  Jobs
+                </Text>
+              </TouchableOpacity>
+
+
+              {/* ABOUT */}
+
+              <TouchableOpacity
+                style={styles.navLink}
+                onPress={() =>
+                  handleNavigation("About")
+                }
+              >
+                <Text style={styles.navLinkText}>
+                  About
+                </Text>
+              </TouchableOpacity>
+
+
+              {/* HOW IT WORKS */}
+
+              <TouchableOpacity
+                style={styles.navLink}
+                onPress={() =>
+                  handleNavigation("HowItWorks")
+                }
+              >
+                <Text style={styles.navLinkText}>
+                  How It Works
+                </Text>
+              </TouchableOpacity>
+
 
               {/* ======================================
                   AUTHENTICATED USER
@@ -225,6 +297,9 @@ const Navbar = () => {
 
               {isAuthenticated && (
                 <>
+
+                  {/* DASHBOARD */}
+
                   <TouchableOpacity
                     style={styles.navLink}
                     onPress={handleDashboard}
@@ -243,10 +318,14 @@ const Navbar = () => {
                     </Text>
                   </TouchableOpacity>
 
+
+                  {/* PROFILE */}
+
                   <TouchableOpacity
                     style={styles.navLink}
-                    onPress={handleDashboard}
+                    onPress={handleProfile}
                   >
+
                     {user?.profilePhoto ? (
                       <Image
                         source={{
@@ -268,9 +347,12 @@ const Navbar = () => {
                     >
                       Profile
                     </Text>
+
                   </TouchableOpacity>
 
+
                   <View style={styles.divider} />
+
 
                   {/* LOGOUT */}
 
@@ -278,6 +360,7 @@ const Navbar = () => {
                     style={styles.navLink}
                     onPress={handleLogout}
                   >
+
                     <Text style={styles.logoutIcon}>
                       ↪
                     </Text>
@@ -291,9 +374,12 @@ const Navbar = () => {
                     >
                       Logout
                     </Text>
+
                   </TouchableOpacity>
+
                 </>
               )}
+
 
               {/* ======================================
                   LOGGED OUT USER
@@ -301,7 +387,11 @@ const Navbar = () => {
 
               {!isAuthenticated && (
                 <>
+
                   <View style={styles.divider} />
+
+
+                  {/* LOGIN */}
 
                   <TouchableOpacity
                     style={styles.navLink}
@@ -314,24 +404,29 @@ const Navbar = () => {
                     </Text>
                   </TouchableOpacity>
 
-                  {/* Register screen will be added later */}
+
+                  {/* SIGN UP */}
 
                   <TouchableOpacity
-  style={styles.signupButton}
-  onPress={() =>
-    handleNavigation("Register")
-  }
->
-  <Text style={styles.signupText}>
-    Sign Up
-  </Text>
-</TouchableOpacity>
+                    style={styles.signupButton}
+                    onPress={() =>
+                      handleNavigation("Register")
+                    }
+                  >
+                    <Text style={styles.signupText}>
+                      Sign Up
+                    </Text>
+                  </TouchableOpacity>
+
                 </>
               )}
 
             </View>
+
           </Pressable>
+
         </Pressable>
+
       </Modal>
     </>
   );
@@ -388,23 +483,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  loginText: {
-    color: "#d1d5db",
-    fontSize: 16,
-    fontWeight: "500",
-  },
-
-  menuButton: {
-    marginLeft: 18,
-    padding: 2,
-  },
-
-  menuIcon: {
-    color: "#ffffff",
-    fontSize: 28,
-    lineHeight: 30,
-  },
-
   profileButton: {
     alignItems: "center",
     justifyContent: "center",
@@ -436,6 +514,18 @@ const styles = StyleSheet.create({
   profileIcon: {
     fontSize: 18,
   },
+
+  menuButton: {
+    marginLeft: 18,
+    padding: 2,
+  },
+
+  menuIcon: {
+    color: "#ffffff",
+    fontSize: 28,
+    lineHeight: 30,
+  },
+
 
   // ========================================
   // MODAL
@@ -544,4 +634,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
+
 });
