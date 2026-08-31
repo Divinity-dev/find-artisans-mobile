@@ -45,20 +45,76 @@ const AuthProvider = ({ children }) => {
   }, []);
 
   // ======================================
-  // LOGIN
+// LOGIN IN AuthContext.js
+// ======================================
+
+const login = async (email, password) => {
+  try {
+    const response = await fetch(
+      `${process.env.EXPO_PUBLIC_API_URL}/auth/login`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Login failed");
+    }
+
+    if (!data?.token || !data?.user) {
+      throw new Error("Invalid response from server.");
+    }
+
+    // 🛑 CHECK EMAIL VERIFICATION BEFORE SETTING STATE / ASYNC STORAGE
+    if (!data.user.isEmailVerified) {
+      throw new Error("Please verify your email before logging in.");
+    }
+
+    // ✅ ONLY PERSIST & UPDATE STATE IF VERIFIED
+    await AsyncStorage.setItem("token", data.token);
+    await AsyncStorage.setItem("user", JSON.stringify(data.user));
+
+    // Batch state updates together
+    setToken(data.token);
+    setUser(data.user);
+
+    return data;
+  } catch (error) {
+    console.error("Login error:", error);
+    throw error;
+  }
+};
+
+  // ======================================
+  // REGISTER
   // ======================================
 
-  const login = async (email, password) => {
+  const register = async (
+    fullName,
+    email,
+    phone,
+    role,
+    password
+  ) => {
     try {
       const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}/auth/login`,
+        `${process.env.EXPO_PUBLIC_API_URL}/auth/register`,
         {
           method: "POST",
+
           headers: {
             "Content-Type": "application/json",
           },
+
           body: JSON.stringify({
+            fullName,
             email,
+            phone,
+            role,
             password,
           }),
         }
@@ -68,108 +124,58 @@ const AuthProvider = ({ children }) => {
 
       if (!response.ok) {
         throw new Error(
-          data.message || "Login failed"
+          data.message ||
+            "Registration failed"
         );
       }
 
-      // Store authentication data
-      await AsyncStorage.setItem(
-        "token",
-        data.token
-      );
-
-      await AsyncStorage.setItem(
-        "user",
-        JSON.stringify(data.user)
-      );
-
-      setToken(data.token);
-      setUser(data.user);
+      // ======================================
+      // IMPORTANT
+      // ======================================
+      // Registration does NOT log the user in.
+      //
+      // The backend sends a verification email.
+      //
+      // The user must:
+      //
+      // Register
+      //     ↓
+      // Verify email
+      //     ↓
+      // Login
+      //     ↓
+      // Dashboard
 
       return data;
+
     } catch (error) {
-      console.error("Login error:", error);
+      console.error(
+        "Registration error:",
+        error
+      );
 
       throw error;
     }
   };
 
   // ======================================
-// REGISTER
-// ======================================
-
-const register = async (
-  fullName,
-  email,
-  phone,
-  role,
-  password
-) => {
-  try {
-    const response = await fetch(
-      `${process.env.EXPO_PUBLIC_API_URL}/auth/register`,
-      {
-        method: "POST",
-
-        headers: {
-          "Content-Type": "application/json",
-        },
-
-        body: JSON.stringify({
-          fullName,
-          email,
-          phone,
-          role,
-          password,
-        }),
-      }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(
-        data.message || "Registration failed"
-      );
-    }
-
-    // Store authentication data
-    await AsyncStorage.setItem(
-      "token",
-      data.token
-    );
-
-    await AsyncStorage.setItem(
-      "user",
-      JSON.stringify(data.user)
-    );
-
-    // Update authentication state
-    setToken(data.token);
-    setUser(data.user);
-
-    return data;
-  } catch (error) {
-    console.error(
-      "Registration error:",
-      error
-    );
-
-    throw error;
-  }
-};
-
-  // ======================================
   // LOGOUT
   // ======================================
 
   const logout = async () => {
+  
     try {
-      await AsyncStorage.removeItem("token");
-      await AsyncStorage.removeItem("user");
+      await AsyncStorage.removeItem(
+        "token"
+      );
+
+      await AsyncStorage.removeItem(
+        "user"
+      );
 
       setToken(null);
       setUser(null);
+
     } catch (error) {
       console.error(
         "Logout error:",
@@ -186,7 +192,7 @@ const register = async (
         loading,
         isAuthenticated: !!token,
         login,
-         register,
+        register,
         logout,
       }}
     >
