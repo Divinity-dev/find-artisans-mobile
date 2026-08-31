@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useNavigation } from "@react-navigation/native";
@@ -49,6 +50,9 @@ const RegisterScreen = () => {
     useState(false);
 
   const [error, setError] = useState("");
+
+  const [registrationComplete, setRegistrationComplete] =
+    useState(false);
 
   // ======================================
   // VALIDATION
@@ -108,8 +112,7 @@ const RegisterScreen = () => {
   const handleRegister = async () => {
     setError("");
 
-    const validationError =
-      validateForm();
+    const validationError = validateForm();
 
     if (validationError) {
       setError(validationError);
@@ -127,10 +130,14 @@ const RegisterScreen = () => {
         password
       );
 
-      // Registration automatically
-      // authenticates the user.
+      // ======================================
+      // REGISTRATION SUCCESSFUL
+      // ======================================
+      // The backend does NOT log the user in.
+      // The user must verify their email first.
 
-      navigation.navigate("Home");
+      setRegistrationComplete(true);
+
     } catch (error) {
       setError(
         error.message ||
@@ -151,258 +158,297 @@ const RegisterScreen = () => {
       >
         <View style={styles.card}>
 
-          {/* ======================================
-              HEADER
-          ====================================== */}
+          {registrationComplete ? (
 
-          <Text style={styles.title}>
-            Create Account
-          </Text>
+            // ======================================
+            // REGISTRATION SUCCESS
+            // ======================================
 
-          <Text style={styles.subtitle}>
-            Join FindArtisans and get started.
-          </Text>
+            <View style={styles.successContainer}>
 
-          {/* ERROR */}
+              <Text style={styles.successIcon}>
+                🎉
+              </Text>
 
-          {error ? (
-            <Text style={styles.error}>
-              {error}
-            </Text>
-          ) : null}
+              <Text style={styles.successTitle}>
+                Account Created
+              </Text>
 
-          {/* ======================================
-              FULL NAME
-          ====================================== */}
+              <Text style={styles.successText}>
+                Your account has been created
+                successfully.
+              </Text>
 
-          <Text style={styles.label}>
-            Full Name
-          </Text>
+              <Text style={styles.successText}>
+                We have sent a verification link
+                to your email.
+              </Text>
 
-          <TextInput
-            value={fullName}
-            onChangeText={setFullName}
-            placeholder="Enter your full name"
-            placeholderTextColor="#6b7280"
-            style={styles.input}
-            autoCapitalize="words"
-          />
+              <Text style={styles.successText}>
+                Please check your inbox and verify
+                your email before logging in.
+              </Text>
 
-          {/* ======================================
-              EMAIL
-          ====================================== */}
-
-          <Text style={styles.label}>
-            Email
-          </Text>
-
-          <TextInput
-            value={email}
-            onChangeText={setEmail}
-            placeholder="Enter your email"
-            placeholderTextColor="#6b7280"
-            style={styles.input}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-
-          {/* ======================================
-              PHONE
-          ====================================== */}
-
-          <Text style={styles.label}>
-            Phone Number
-          </Text>
-
-          <TextInput
-            value={phone}
-            onChangeText={setPhone}
-            placeholder="08012345678"
-            placeholderTextColor="#6b7280"
-            style={styles.input}
-            keyboardType="phone-pad"
-            maxLength={11}
-          />
-
-          {/* ======================================
-              ROLE
-          ====================================== */}
-
-          <Text style={styles.label}>
-            I want to join as
-          </Text>
-
-          <View style={styles.roleContainer}>
-
-            {/* CUSTOMER */}
-
-            <TouchableOpacity
-              activeOpacity={0.8}
-              style={[
-                styles.roleButton,
-                role === "customer" &&
-                  styles.selectedRole,
-              ]}
-              onPress={() =>
-                setRole("customer")
-              }
-            >
-              <Text
-                style={[
-                  styles.roleText,
-                  role === "customer" &&
-                    styles.selectedRoleText,
-                ]}
+              <TouchableOpacity
+                activeOpacity={0.8}
+                style={styles.loginButton}
+                onPress={() =>
+                  navigation.navigate("Login")
+                }
               >
-                Customer
+                <Text style={styles.loginButtonText}>
+                  Go to Login
+                </Text>
+              </TouchableOpacity>
+
+            </View>
+
+          ) : (
+
+            // ======================================
+            // REGISTRATION FORM
+            // ======================================
+
+            <>
+              {/* HEADER */}
+
+              <Text style={styles.title}>
+                Create Account
               </Text>
-            </TouchableOpacity>
 
-            {/* WORKER */}
+              <Text style={styles.subtitle}>
+                Join FindArtisans and get started.
+              </Text>
 
-            <TouchableOpacity
-              activeOpacity={0.8}
-              style={[
-                styles.roleButton,
-                role === "worker" &&
-                  styles.selectedRole,
-              ]}
-              onPress={() =>
-                setRole("worker")
-              }
-            >
-              <Text
+              {/* ERROR */}
+
+              {error ? (
+                <Text style={styles.error}>
+                  {error}
+                </Text>
+              ) : null}
+
+              {/* FULL NAME */}
+
+              <Text style={styles.label}>
+                Full Name
+              </Text>
+
+              <TextInput
+                value={fullName}
+                onChangeText={setFullName}
+                placeholder="Enter your full name"
+                placeholderTextColor="#6b7280"
+                style={styles.input}
+                autoCapitalize="words"
+              />
+
+              {/* EMAIL */}
+
+              <Text style={styles.label}>
+                Email
+              </Text>
+
+              <TextInput
+                value={email}
+                onChangeText={setEmail}
+                placeholder="Enter your email"
+                placeholderTextColor="#6b7280"
+                style={styles.input}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+
+              {/* PHONE */}
+
+              <Text style={styles.label}>
+                Phone Number
+              </Text>
+
+              <TextInput
+                value={phone}
+                onChangeText={setPhone}
+                placeholder="08012345678"
+                placeholderTextColor="#6b7280"
+                style={styles.input}
+                keyboardType="phone-pad"
+                maxLength={11}
+              />
+
+              {/* ROLE */}
+
+              <Text style={styles.label}>
+                I want to join as
+              </Text>
+
+              <View style={styles.roleContainer}>
+
+                {/* CUSTOMER */}
+
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  style={[
+                    styles.roleButton,
+                    role === "customer" &&
+                      styles.selectedRole,
+                  ]}
+                  onPress={() =>
+                    setRole("customer")
+                  }
+                >
+                  <Text
+                    style={[
+                      styles.roleText,
+                      role === "customer" &&
+                        styles.selectedRoleText,
+                    ]}
+                  >
+                    Customer
+                  </Text>
+                </TouchableOpacity>
+
+                {/* WORKER */}
+
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  style={[
+                    styles.roleButton,
+                    role === "worker" &&
+                      styles.selectedRole,
+                  ]}
+                  onPress={() =>
+                    setRole("worker")
+                  }
+                >
+                  <Text
+                    style={[
+                      styles.roleText,
+                      role === "worker" &&
+                        styles.selectedRoleText,
+                    ]}
+                  >
+                    Worker
+                  </Text>
+                </TouchableOpacity>
+
+              </View>
+
+              {/* PASSWORD */}
+
+              <Text style={styles.label}>
+                Password
+              </Text>
+
+              <View style={styles.passwordContainer}>
+
+                <TextInput
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholder="Enter password"
+                  placeholderTextColor="#6b7280"
+                  style={styles.passwordInput}
+                  secureTextEntry={!showPassword}
+                />
+
+                <TouchableOpacity
+                  onPress={() =>
+                    setShowPassword(
+                      !showPassword
+                    )
+                  }
+                >
+                  <Text style={styles.eye}>
+                    {showPassword
+                      ? "Hide"
+                      : "Show"}
+                  </Text>
+                </TouchableOpacity>
+
+              </View>
+
+              {/* CONFIRM PASSWORD */}
+
+              <Text style={styles.label}>
+                Confirm Password
+              </Text>
+
+              <View style={styles.passwordContainer}>
+
+                <TextInput
+                  value={confirmPassword}
+                  onChangeText={
+                    setConfirmPassword
+                  }
+                  placeholder="Confirm password"
+                  placeholderTextColor="#6b7280"
+                  style={styles.passwordInput}
+                  secureTextEntry={
+                    !showConfirmPassword
+                  }
+                />
+
+                <TouchableOpacity
+                  onPress={() =>
+                    setShowConfirmPassword(
+                      !showConfirmPassword
+                    )
+                  }
+                >
+                  <Text style={styles.eye}>
+                    {showConfirmPassword
+                      ? "Hide"
+                      : "Show"}
+                  </Text>
+                </TouchableOpacity>
+
+              </View>
+
+              {/* SUBMIT */}
+
+              <TouchableOpacity
+                activeOpacity={0.8}
                 style={[
-                  styles.roleText,
-                  role === "worker" &&
-                    styles.selectedRoleText,
+                  styles.registerButton,
+                  loading &&
+                    styles.disabledButton,
                 ]}
+                onPress={handleRegister}
+                disabled={loading}
               >
-                Worker
-              </Text>
-            </TouchableOpacity>
+                <Text
+                  style={
+                    styles.registerButtonText
+                  }
+                >
+                  {loading
+                    ? "Creating..."
+                    : "Create Account"}
+                </Text>
+              </TouchableOpacity>
 
-          </View>
+              {/* LOGIN */}
 
-          {/* ======================================
-              PASSWORD
-          ====================================== */}
+              <View style={styles.loginContainer}>
 
-          <Text style={styles.label}>
-            Password
-          </Text>
+                <Text style={styles.loginText}>
+                  Already have an account?
+                </Text>
 
-          <View style={styles.passwordContainer}>
+                <TouchableOpacity
+                  onPress={() =>
+                    navigation.navigate("Login")
+                  }
+                >
+                  <Text style={styles.loginLink}>
+                    Login
+                  </Text>
+                </TouchableOpacity>
 
-            <TextInput
-              value={password}
-              onChangeText={setPassword}
-              placeholder="Enter password"
-              placeholderTextColor="#6b7280"
-              style={styles.passwordInput}
-              secureTextEntry={!showPassword}
-            />
+              </View>
 
-            <TouchableOpacity
-              onPress={() =>
-                setShowPassword(
-                  !showPassword
-                )
-              }
-            >
-              <Text style={styles.eye}>
-                {showPassword ? "Hide" : "Show"}
-              </Text>
-            </TouchableOpacity>
-
-          </View>
-
-          {/* ======================================
-              CONFIRM PASSWORD
-          ====================================== */}
-
-          <Text style={styles.label}>
-            Confirm Password
-          </Text>
-
-          <View style={styles.passwordContainer}>
-
-            <TextInput
-              value={confirmPassword}
-              onChangeText={
-                setConfirmPassword
-              }
-              placeholder="Confirm password"
-              placeholderTextColor="#6b7280"
-              style={styles.passwordInput}
-              secureTextEntry={
-                !showConfirmPassword
-              }
-            />
-
-            <TouchableOpacity
-              onPress={() =>
-                setShowConfirmPassword(
-                  !showConfirmPassword
-                )
-              }
-            >
-              <Text style={styles.eye}>
-                {showConfirmPassword
-                  ? "Hide"
-                  : "Show"}
-              </Text>
-            </TouchableOpacity>
-
-          </View>
-
-          {/* ======================================
-              SUBMIT
-          ====================================== */}
-
-          <TouchableOpacity
-            activeOpacity={0.8}
-            style={[
-              styles.registerButton,
-              loading &&
-                styles.disabledButton,
-            ]}
-            onPress={handleRegister}
-            disabled={loading}
-          >
-            <Text
-              style={
-                styles.registerButtonText
-              }
-            >
-              {loading
-                ? "Creating..."
-                : "Create Account"}
-            </Text>
-          </TouchableOpacity>
-
-          {/* ======================================
-              LOGIN
-          ====================================== */}
-
-          <View style={styles.loginContainer}>
-
-            <Text style={styles.loginText}>
-              Already have an account?
-            </Text>
-
-            <TouchableOpacity
-              onPress={() =>
-                navigation.navigate("Login")
-              }
-            >
-              <Text style={styles.loginLink}>
-                Login
-              </Text>
-            </TouchableOpacity>
-
-          </View>
+            </>
+          )}
 
         </View>
       </ScrollView>
@@ -516,7 +562,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingLeft: 14,
     paddingRight: 12,
-
     flexDirection: "row",
     alignItems: "center",
   },
@@ -537,10 +582,8 @@ const styles = StyleSheet.create({
     minHeight: 54,
     backgroundColor: "#f97316",
     borderRadius: 12,
-
     alignItems: "center",
     justifyContent: "center",
-
     marginTop: 24,
   },
 
@@ -558,7 +601,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-
     marginTop: 20,
   },
 
@@ -573,4 +615,51 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginLeft: 5,
   },
+
+  // ==========================================
+  // SUCCESS SCREEN
+  // ==========================================
+
+  successContainer: {
+    alignItems: "center",
+    paddingVertical: 20,
+  },
+
+  successIcon: {
+    fontSize: 48,
+    marginBottom: 16,
+  },
+
+  successTitle: {
+    color: "#ffffff",
+    fontSize: 26,
+    fontWeight: "800",
+    textAlign: "center",
+    marginBottom: 16,
+  },
+
+  successText: {
+    color: "#9ca3af",
+    fontSize: 15,
+    lineHeight: 23,
+    textAlign: "center",
+    marginBottom: 8,
+  },
+
+  loginButton: {
+    width: "100%",
+    minHeight: 54,
+    backgroundColor: "#f97316",
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 20,
+  },
+
+  loginButtonText: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "700",
+  },
+
 });

@@ -5,6 +5,7 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
+   Image,
   Text,
   TouchableOpacity,
   View,
@@ -37,7 +38,6 @@ const HomeScreen = () => {
   const [featuredLoading, setFeaturedLoading] = useState(true);
 
   const navigation = useNavigation();
-
   const {
     location,
     loading: locationLoading,
@@ -114,6 +114,7 @@ const HomeScreen = () => {
     <SafeAreaView style={styles.container}>
       <StatusBar style="light" />
       <Navbar />
+
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}

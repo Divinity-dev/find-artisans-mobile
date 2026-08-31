@@ -2,13 +2,16 @@ import React, { useEffect, useState } from "react";
 
 import {
   ActivityIndicator,
+  Alert,
   Image,
+  Modal,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -19,7 +22,6 @@ import Footer from "../components/Footer";
 
 
 const WorkerDashboardScreen = ({ navigation }) => {
-
   // ======================================
   // AUTH
   // ======================================
@@ -63,6 +65,9 @@ const WorkerDashboardScreen = ({ navigation }) => {
 
   const [error, setError] =
     useState("");
+
+  const [showVerifyModal, setShowVerifyModal] =
+    useState(false);
 
 
   // ======================================
@@ -258,6 +263,54 @@ const WorkerDashboardScreen = ({ navigation }) => {
 
 
   // ======================================
+  // NIN VERIFICATION
+  // ======================================
+
+  const isVerified =
+    worker?.verified === true ||
+    worker?.verification?.isVerified === true;
+
+
+  // ======================================
+  // SHOW VERIFICATION MODAL
+  // ======================================
+
+  useEffect(() => {
+
+    if (!worker) {
+      return;
+    }
+
+    const verified =
+      worker?.verified === true ||
+      worker?.verification?.isVerified === true;
+
+    if (!verified) {
+      setShowVerifyModal(true);
+    }
+
+  }, [worker]);
+
+
+  // ======================================
+  // OPEN VERIFICATION
+  // ======================================
+
+  const goToVerification = () => {
+
+    setShowVerifyModal(false);
+
+    navigation.navigate(
+      "WorkerProfileEdit",
+      {
+        scrollTo: "verification",
+      }
+    );
+
+  };
+
+
+  // ======================================
   // LOGIN REQUIRED
   // ======================================
 
@@ -378,18 +431,9 @@ const WorkerDashboardScreen = ({ navigation }) => {
   const totalEarnings =
     completedJobs.reduce(
       (sum, job) =>
-        sum + (job.budget || 0),
+        sum + (Number(job.budget) || 0),
       0
     );
-
-
-  // ======================================
-  // VERIFICATION
-  // ======================================
-
-  const isVerified =
-    worker?.verified ||
-    worker?.verification?.isVerified;
 
 
   // ======================================
@@ -400,6 +444,101 @@ const WorkerDashboardScreen = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
 
       <Navbar />
+
+
+      {/* ==================================
+          NIN VERIFICATION MODAL
+      ================================== */}
+
+      <Modal
+        visible={showVerifyModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() =>
+          setShowVerifyModal(false)
+        }
+      >
+
+        <View style={styles.modalOverlay}>
+
+          <View style={styles.verifyModal}>
+
+            {/* ICON */}
+
+            <View style={styles.verifyIconContainer}>
+
+              <Ionicons
+                name="shield-checkmark-outline"
+                size={38}
+                color="#f97316"
+              />
+
+            </View>
+
+
+            {/* TITLE */}
+
+            <Text style={styles.verifyTitle}>
+              Verify Your Account
+            </Text>
+
+
+            {/* MESSAGE */}
+
+            <Text style={styles.verifyMessage}>
+              Your account has not been NIN
+              verified yet.
+            </Text>
+
+            <Text style={styles.verifySubMessage}>
+              NIN verification helps customers
+              trust you and increases your chances
+              of getting hired on FindArtisans.
+            </Text>
+
+
+            {/* VERIFY BUTTON */}
+
+            <TouchableOpacity
+              style={styles.verifyButton}
+              onPress={goToVerification}
+              activeOpacity={0.8}
+            >
+
+              <Ionicons
+                name="shield-checkmark-outline"
+                size={18}
+                color="#ffffff"
+              />
+
+              <Text style={styles.verifyButtonText}>
+                Verify My NIN
+              </Text>
+
+            </TouchableOpacity>
+
+
+            {/* LATER BUTTON */}
+
+            <TouchableOpacity
+              style={styles.laterButton}
+              onPress={() =>
+                setShowVerifyModal(false)
+              }
+            >
+
+              <Text style={styles.laterButtonText}>
+                Maybe Later
+              </Text>
+
+            </TouchableOpacity>
+
+          </View>
+
+        </View>
+
+      </Modal>
+
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -426,213 +565,251 @@ const WorkerDashboardScreen = ({ navigation }) => {
         </View>
 
 
-        
-{/* ==================================
-    PROFILE
-================================== */}
+        {/* ==================================
+            PROFILE
+        ================================== */}
 
-<View style={styles.profileCard}>
+        <View style={styles.profileCard}>
 
-  {/* PROFILE HEADER */}
+          {/* PROFILE HEADER */}
 
-  <View style={styles.profileHeader}>
+          <View style={styles.profileHeader}>
 
-    {/* AVATAR */}
+            {/* AVATAR */}
 
-    <View style={styles.avatar}>
+            <View style={styles.avatar}>
 
-      {worker?.profilePhoto ? (
-        <Image
-          source={{
-            uri: worker.profilePhoto,
-          }}
-          style={styles.avatarImage}
-        />
-      ) : (
-        <Ionicons
-          name="person"
-          size={30}
-          color="#9ca3af"
-        />
-      )}
+              {worker?.profilePhoto ? (
+                <Image
+                  source={{
+                    uri: worker.profilePhoto,
+                  }}
+                  style={styles.avatarImage}
+                />
+              ) : (
+                <Ionicons
+                  name="person"
+                  size={30}
+                  color="#9ca3af"
+                />
+              )}
 
-    </View>
+            </View>
 
 
-    {/* NAME + SKILL */}
+            {/* NAME + SKILL */}
 
-    <View style={styles.profileInfo}>
+            <View style={styles.profileInfo}>
 
-      <View style={styles.nameRow}>
+              <View style={styles.nameRow}>
 
-        <Text
-          style={styles.workerName}
-          numberOfLines={1}
-        >
-          {worker?.fullName || "Worker"}
-        </Text>
+                <Text
+                  style={styles.workerName}
+                  numberOfLines={1}
+                >
+                  {worker?.fullName || "Worker"}
+                </Text>
 
-        {isVerified && (
-          <Ionicons
-            name="checkmark-circle"
-            size={19}
-            color="#4ade80"
-          />
-        )}
+                {isVerified && (
+                  <Ionicons
+                    name="checkmark-circle"
+                    size={19}
+                    color="#4ade80"
+                  />
+                )}
 
-      </View>
+              </View>
 
-      <Text style={styles.skill}>
-        {worker?.skill || "Artisan"}
-      </Text>
+              <Text style={styles.skill}>
+                {worker?.skill || "Artisan"}
+              </Text>
 
-    </View>
+            </View>
 
 
-    {/* EDIT PROFILE */}
+            {/* EDIT PROFILE */}
 
-    <TouchableOpacity
-      style={styles.editProfileButton}
-      onPress={() =>
-        navigation.navigate("WorkerProfileEdit")
-      }
-    >
+            <TouchableOpacity
+              style={styles.editProfileButton}
+              onPress={() =>
+                navigation.navigate(
+                  "WorkerProfileEdit"
+                )
+              }
+            >
 
-      <Ionicons
-        name="create-outline"
-        size={18}
-        color="#f97316"
-      />
+              <Ionicons
+                name="create-outline"
+                size={18}
+                color="#f97316"
+              />
 
-      <Text style={styles.editProfileText}>
-        Edit
-      </Text>
+              <Text style={styles.editProfileText}>
+                Edit
+              </Text>
 
-    </TouchableOpacity>
+            </TouchableOpacity>
 
-  </View>
+          </View>
 
 
-  {/* AVAILABILITY */}
+          {/* VERIFICATION STATUS */}
 
-  <View style={styles.availabilityRow}>
+          {!isVerified && (
+            <TouchableOpacity
+              style={styles.verificationWarning}
+              onPress={goToVerification}
+              activeOpacity={0.8}
+            >
 
-    <View
-      style={[
-        styles.availabilityBadge,
+              <Ionicons
+                name="warning-outline"
+                size={18}
+                color="#facc15"
+              />
 
-        worker?.availability === "available" &&
-          styles.availableBadge,
+              <View style={styles.verificationWarningTextContainer}>
 
-        worker?.availability === "busy" &&
-          styles.busyBadge,
-      ]}
-    >
+                <Text style={styles.verificationWarningTitle}>
+                  NIN verification required
+                </Text>
 
-      <Text
-        style={[
-          styles.availabilityText,
+                <Text style={styles.verificationWarningText}>
+                  Tap here to verify your account.
+                </Text>
 
-          worker?.availability === "available" &&
-            styles.availableText,
+              </View>
 
-          worker?.availability === "busy" &&
-            styles.busyText,
-        ]}
-      >
-        {worker?.availability || "offline"}
-      </Text>
+              <Ionicons
+                name="chevron-forward"
+                size={18}
+                color="#facc15"
+              />
 
-    </View>
+            </TouchableOpacity>
+          )}
 
-  </View>
 
+          {/* AVAILABILITY */}
 
-  {/* LOCATION */}
+          <View style={styles.availabilityRow}>
 
-  <View style={styles.locationRow}>
+            <View
+              style={[
+                styles.availabilityBadge,
 
-    <Ionicons
-      name="location-outline"
-      size={17}
-      color="#9ca3af"
-    />
+                worker?.availability === "available" &&
+                  styles.availableBadge,
 
-    <Text style={styles.locationText}>
+                worker?.availability === "busy" &&
+                  styles.busyBadge,
+              ]}
+            >
 
-      {worker?.location?.city || "Location"}
+              <Text
+                style={[
+                  styles.availabilityText,
 
-      {worker?.location?.state &&
-        `, ${worker.location.state}`}
+                  worker?.availability === "available" &&
+                    styles.availableText,
 
-    </Text>
+                  worker?.availability === "busy" &&
+                    styles.busyText,
+                ]}
+              >
+                {worker?.availability || "offline"}
+              </Text>
 
-  </View>
+            </View>
 
+          </View>
 
-  {/* PROFILE STATS */}
 
-  <View style={styles.profileStats}>
+          {/* LOCATION */}
 
-    <View style={styles.profileStat}>
+          <View style={styles.locationRow}>
 
-      <Ionicons
-        name="star"
-        size={18}
-        color="#facc15"
-      />
+            <Ionicons
+              name="location-outline"
+              size={17}
+              color="#9ca3af"
+            />
 
-      <Text style={styles.profileStatValue}>
-        {worker?.rating || 0}
-      </Text>
+            <Text style={styles.locationText}>
 
-      <Text style={styles.profileStatLabel}>
-        Rating
-      </Text>
+              {worker?.location?.city || "Location"}
 
-    </View>
+              {worker?.location?.state &&
+                `, ${worker.location.state}`}
 
+            </Text>
 
-    <View style={styles.profileStat}>
+          </View>
 
-      <Ionicons
-        name="checkmark-done"
-        size={18}
-        color="#4ade80"
-      />
 
-      <Text style={styles.profileStatValue}>
-        {worker?.jobsCompleted || 0}
-      </Text>
+          {/* PROFILE STATS */}
 
-      <Text style={styles.profileStatLabel}>
-        Jobs
-      </Text>
+          <View style={styles.profileStats}>
 
-    </View>
+            <View style={styles.profileStat}>
 
+              <Ionicons
+                name="star"
+                size={18}
+                color="#facc15"
+              />
 
-    <View style={styles.profileStat}>
+              <Text style={styles.profileStatValue}>
+                {worker?.rating || 0}
+              </Text>
 
-      <Ionicons
-        name="time-outline"
-        size={18}
-        color="#60a5fa"
-      />
+              <Text style={styles.profileStatLabel}>
+                Rating
+              </Text>
 
-      <Text style={styles.profileStatValue}>
-        {worker?.responseTime || "N/A"}
-      </Text>
+            </View>
 
-      <Text style={styles.profileStatLabel}>
-        Response
-      </Text>
 
-    </View>
+            <View style={styles.profileStat}>
 
-  </View>
+              <Ionicons
+                name="checkmark-done"
+                size={18}
+                color="#4ade80"
+              />
 
-</View>
+              <Text style={styles.profileStatValue}>
+                {worker?.jobsCompleted || 0}
+              </Text>
+
+              <Text style={styles.profileStatLabel}>
+                Jobs
+              </Text>
+
+            </View>
+
+
+            <View style={styles.profileStat}>
+
+              <Ionicons
+                name="time-outline"
+                size={18}
+                color="#60a5fa"
+              />
+
+              <Text style={styles.profileStatValue}>
+                {worker?.responseTime || "N/A"}
+              </Text>
+
+              <Text style={styles.profileStatLabel}>
+                Response
+              </Text>
+
+            </View>
+
+          </View>
+
+        </View>
 
 
         {/* ==================================
@@ -785,8 +962,9 @@ const WorkerDashboardScreen = ({ navigation }) => {
                   />
 
                   <Text style={styles.jobInfoText}>
-                    {job.location ||
-                      "Location not specified"}
+                    {typeof job.location === "string"
+                      ? job.location
+                      : `${job.location?.city || "Location"}${job.location?.state ? `, ${job.location.state}` : ""}`}
                   </Text>
 
                 </View>
@@ -801,7 +979,7 @@ const WorkerDashboardScreen = ({ navigation }) => {
 
                   <Text style={styles.jobInfoText}>
                     ₦{(
-                      job.budget || 0
+                      Number(job.budget) || 0
                     ).toLocaleString()}
                   </Text>
 
@@ -887,10 +1065,12 @@ const WorkerDashboardScreen = ({ navigation }) => {
                 </Text>
 
                 <Text
-                  style={styles.completedBudget}
+                  style={
+                    styles.completedBudget
+                  }
                 >
                   ₦{(
-                    job.budget || 0
+                    Number(job.budget) || 0
                   ).toLocaleString()}
                 </Text>
 
@@ -950,7 +1130,7 @@ const WorkerDashboardScreen = ({ navigation }) => {
                   style={styles.portfolioCard}
                 >
 
-                  {item.image && (
+                  {item.image ? (
 
                     <Image
                       source={{
@@ -960,6 +1140,22 @@ const WorkerDashboardScreen = ({ navigation }) => {
                         styles.portfolioImage
                       }
                     />
+
+                  ) : (
+
+                    <View
+                      style={
+                        styles.portfolioImagePlaceholder
+                      }
+                    >
+
+                      <Ionicons
+                        name="image-outline"
+                        size={35}
+                        color="#4b5563"
+                      />
+
+                    </View>
 
                   )}
 
@@ -1017,7 +1213,9 @@ const WorkerDashboardScreen = ({ navigation }) => {
           }
 
           onRegister={() =>
-            navigation.navigate("Register")
+            navigation.navigate(
+              "WorkerProfileEdit"
+            )
           }
 
         />
@@ -1090,9 +1288,9 @@ const styles = StyleSheet.create({
   },
 
   profileHeader: {
-  flexDirection: "row",
-  alignItems: "center",
-},
+    flexDirection: "row",
+    alignItems: "center",
+  },
 
   avatar: {
     width: 62,
@@ -1104,19 +1302,20 @@ const styles = StyleSheet.create({
 
     alignItems: "center",
     justifyContent: "center",
-     overflow: "hidden",
+
+    overflow: "hidden",
   },
 
   avatarImage: {
-  width: "100%",
-  height: "100%",
-},
+    width: "100%",
+    height: "100%",
+  },
 
   profileInfo: {
-  flex: 1,
-  marginLeft: 14,
-  minWidth: 0,
-},
+    flex: 1,
+    marginLeft: 14,
+    minWidth: 0,
+  },
 
   nameRow: {
     flexDirection: "row",
@@ -1136,6 +1335,50 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
   },
+
+
+  // ========================================
+  // VERIFICATION WARNING
+  // ========================================
+
+  verificationWarning: {
+    marginTop: 17,
+
+    padding: 12,
+
+    borderRadius: 12,
+
+    backgroundColor: "rgba(234,179,8,0.10)",
+
+    borderWidth: 1,
+    borderColor: "rgba(234,179,8,0.25)",
+
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  verificationWarningTextContainer: {
+    flex: 1,
+    marginLeft: 9,
+    marginRight: 8,
+  },
+
+  verificationWarningTitle: {
+    color: "#facc15",
+    fontSize: 12,
+    fontWeight: "800",
+  },
+
+  verificationWarningText: {
+    color: "#a3a3a3",
+    fontSize: 11,
+    marginTop: 3,
+  },
+
+
+  // ========================================
+  // AVAILABILITY
+  // ========================================
 
   availabilityRow: {
     marginTop: 16,
@@ -1175,6 +1418,11 @@ const styles = StyleSheet.create({
   busyText: {
     color: "#fb923c",
   },
+
+
+  // ========================================
+  // LOCATION
+  // ========================================
 
   locationRow: {
     flexDirection: "row",
@@ -1457,6 +1705,16 @@ const styles = StyleSheet.create({
     height: 160,
   },
 
+  portfolioImagePlaceholder: {
+    width: "100%",
+    height: 160,
+
+    alignItems: "center",
+    justifyContent: "center",
+
+    backgroundColor: "#1f2937",
+  },
+
   portfolioContent: {
     padding: 14,
   },
@@ -1551,34 +1809,160 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
 
- editProfileButton: {
-  width: 72,
-  height: 38,
 
-  borderRadius: 10,
+  // ========================================
+  // EDIT PROFILE
+  // ========================================
 
-  backgroundColor: "rgba(249,115,22,0.1)",
+  editProfileButton: {
+    width: 72,
+    height: 38,
 
-  borderWidth: 1,
-  borderColor: "rgba(249,115,22,0.25)",
+    borderRadius: 10,
 
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "center",
+    backgroundColor:
+      "rgba(249,115,22,0.1)",
 
-  gap: 5,
-},
+    borderWidth: 1,
+    borderColor:
+      "rgba(249,115,22,0.25)",
 
-editProfileText: {
-  color: "#f97316",
-  fontSize: 12,
-  fontWeight: "700",
-},
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
 
-editProfileText: {
-  color: "#f97316",
-  fontSize: 13,
-  fontWeight: "700",
-},
+    gap: 5,
+  },
+
+  editProfileText: {
+    color: "#f97316",
+    fontSize: 13,
+    fontWeight: "700",
+  },
+
+
+  // ========================================
+  // VERIFICATION MODAL
+  // ========================================
+
+  modalOverlay: {
+    flex: 1,
+
+    backgroundColor:
+      "rgba(0,0,0,0.75)",
+
+    alignItems: "center",
+    justifyContent: "center",
+
+    paddingHorizontal: 24,
+  },
+
+  verifyModal: {
+    width: "100%",
+
+    maxWidth: 420,
+
+    backgroundColor: "#111827",
+
+    borderWidth: 1,
+    borderColor: "#1f2937",
+
+    borderRadius: 24,
+
+    padding: 25,
+
+    alignItems: "center",
+  },
+
+  verifyIconContainer: {
+    width: 72,
+    height: 72,
+
+    borderRadius: 36,
+
+    backgroundColor:
+      "rgba(249,115,22,0.12)",
+
+    alignItems: "center",
+    justifyContent: "center",
+
+    marginBottom: 16,
+  },
+
+  verifyTitle: {
+    color: "#ffffff",
+
+    fontSize: 22,
+
+    fontWeight: "800",
+
+    textAlign: "center",
+  },
+
+  verifyMessage: {
+    color: "#d1d5db",
+
+    fontSize: 14,
+
+    lineHeight: 21,
+
+    textAlign: "center",
+
+    marginTop: 10,
+  },
+
+  verifySubMessage: {
+    color: "#6b7280",
+
+    fontSize: 12,
+
+    lineHeight: 19,
+
+    textAlign: "center",
+
+    marginTop: 8,
+  },
+
+  verifyButton: {
+    width: "100%",
+
+    flexDirection: "row",
+
+    alignItems: "center",
+
+    justifyContent: "center",
+
+    gap: 8,
+
+    backgroundColor: "#f97316",
+
+    paddingVertical: 14,
+
+    borderRadius: 12,
+
+    marginTop: 22,
+  },
+
+  verifyButtonText: {
+    color: "#ffffff",
+
+    fontSize: 14,
+
+    fontWeight: "800",
+  },
+
+  laterButton: {
+    marginTop: 13,
+
+    paddingVertical: 10,
+  },
+
+  laterButtonText: {
+    color: "#9ca3af",
+
+    fontSize: 13,
+
+    fontWeight: "600",
+  },
 
 });

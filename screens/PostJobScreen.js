@@ -625,9 +625,9 @@ const PostJobScreen = ({ navigation }) => {
               Category
             </Text>
 
-            <ServiceSearch
+         <ServiceSearch
   value={category}
-  onChange={setCategory}
+  onServiceChange={setCategory}
 />
           </View>
 
