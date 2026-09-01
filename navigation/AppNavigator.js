@@ -1,4 +1,6 @@
-import React from "react";
+import React, {
+  useEffect,
+} from "react";
 
 import {
   ActivityIndicator,
@@ -10,6 +12,7 @@ import {
 } from "@react-navigation/native-stack";
 
 import { useAuth } from "../context/AuthContext";
+import { navigationRef, getRoleRouteName } from "./navigationRef";
 
 
 // ============================================================
@@ -45,6 +48,7 @@ import ResetPasswordScreen from "../screens/ResetPasswordScreen";
 // ============================================================
 
 import CustomerDashboardScreen from "../screens/CustomerDashboardScreen";
+import CustomerJobsScreen from "../screens/CustomerJobsScreen";
 import PostJobScreen from "../screens/PostJobScreen";
 import CustomerProfileEditScreen from "../screens/CustomerProfileEditScreen";
 
@@ -208,7 +212,25 @@ const AppNavigator = () => {
 
   const {
     loading,
+    user,
+    isAuthenticated,
   } = useAuth();
+
+  useEffect(() => {
+    if (loading || !isAuthenticated || !user) {
+      return;
+    }
+
+    const destination = getRoleRouteName(user.role);
+    const currentRoute = navigationRef.current?.getCurrentRoute()?.name;
+
+    if (currentRoute !== destination) {
+      navigationRef.current?.reset({
+        index: 0,
+        routes: [{ name: destination }],
+      });
+    }
+  }, [loading, isAuthenticated, user]);
 
 
   // ==========================================================
@@ -395,6 +417,21 @@ const AppNavigator = () => {
             navigation={props.navigation}
           >
             <CustomerProfileEditScreen
+              {...props}
+            />
+          </CustomerGuard>
+        )}
+      </Stack.Screen>
+
+
+      <Stack.Screen
+        name="CustomerJobs"
+      >
+        {(props) => (
+          <CustomerGuard
+            navigation={props.navigation}
+          >
+            <CustomerJobsScreen
               {...props}
             />
           </CustomerGuard>

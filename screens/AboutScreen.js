@@ -12,11 +12,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 
+import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
 const AboutScreen = () => {
   const navigation = useNavigation();
+  const { user } = useAuth();
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -332,7 +334,13 @@ const AboutScreen = () => {
           onHowItWorks={() => navigation.navigate("HowItWorks")}
           onProfile={() => {
             if (navigation) {
-              navigation.navigate("CustomerProfile");
+              if (user?._id || user?.id) {
+                navigation.navigate("CustomerProfile", {
+                  customerId: user._id || user.id,
+                });
+              } else {
+                navigation.navigate("CustomerProfile");
+              }
             }
           }}
           onLogin={() => navigation.navigate("Login")}
