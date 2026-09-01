@@ -691,7 +691,7 @@ const CustomerDashboardScreen = ({ navigation }) => {
 
   const goToJobs = () => {
     navigation.navigate(
-      "JobsScreen"
+      "CustomerJobs"
     );
   };
 
@@ -705,7 +705,7 @@ const CustomerDashboardScreen = ({ navigation }) => {
     setShowVerifyModal(false);
 
     navigation.navigate(
-      "CustomerEdit",
+      "CustomerProfileEdit",
       {
         scrollTo:
           "verification",
@@ -1596,58 +1596,34 @@ const CustomerDashboardScreen = ({ navigation }) => {
                 </TouchableOpacity>
               </View>
             ) : (
-              jobs.map(
-                (job) => (
+              (() => {
+                const latestJob = [...jobs].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))[0];
+
+                if (!latestJob) {
+                  return null;
+                }
+
+                return (
                   <JobCard
-                    key={
-                      job?._id
-                    }
-                    job={job}
-                    actionLoading={
-                      actionLoading
-                    }
-                    getJobTitle={
-                      getJobTitle
-                    }
-                    getWorkerName={
-                      getWorkerName
-                    }
-                    getArtisanId={
-                      getArtisanId
-                    }
-                    formatBudget={
-                      formatBudget
-                    }
-                    formatStatus={
-                      formatStatus
-                    }
-                    getStatusColor={
-                      getStatusColor
-                    }
-                    getStatusBackground={
-                      getStatusBackground
-                    }
-                    openJob={
-                      openJob
-                    }
-                    openArtisan={
-                      openArtisan
-                    }
-                    openWorker={
-                      openWorker
-                    }
-                    assignWorker={
-                      assignWorker
-                    }
-                    openStatusModal={
-                      openStatusModal
-                    }
-                    openReviewModal={
-                      openReviewModal
-                    }
+                    key={latestJob?._id}
+                    job={latestJob}
+                    actionLoading={actionLoading}
+                    getJobTitle={getJobTitle}
+                    getWorkerName={getWorkerName}
+                    getArtisanId={getArtisanId}
+                    formatBudget={formatBudget}
+                    formatStatus={formatStatus}
+                    getStatusColor={getStatusColor}
+                    getStatusBackground={getStatusBackground}
+                    openJob={openJob}
+                    openArtisan={openArtisan}
+                    openWorker={openWorker}
+                    assignWorker={assignWorker}
+                    openStatusModal={openStatusModal}
+                    openReviewModal={openReviewModal}
                   />
-                )
-              )
+                );
+              })()
             )}
           </>
         )}

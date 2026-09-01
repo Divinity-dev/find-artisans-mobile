@@ -85,7 +85,15 @@ const Navbar = () => {
 
     } else if (user?.role === "customer") {
 
-      navigation.navigate("CustomerProfile");
+      const customerId = user?._id || user?.id;
+
+      if (customerId) {
+        navigation.navigate("CustomerProfile", {
+          customerId,
+        });
+      } else {
+        navigation.navigate("CustomerProfileEdit");
+      }
 
     } else if (user?.role === "admin") {
 
