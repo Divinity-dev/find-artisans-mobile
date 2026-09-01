@@ -13,6 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Ionicons } from "@expo/vector-icons";
 
+import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
@@ -82,11 +83,16 @@ const CustomerProfileScreen = ({
   route,
 }) => {
 
+  const { user } = useAuth();
+
   // ======================================
   // CUSTOMER ID
   // ======================================
 
-  const { customerId } = route.params || {};
+  const customerId =
+    route?.params?.customerId ||
+    user?._id ||
+    user?.id;
 
 
   // ======================================
@@ -172,7 +178,7 @@ const CustomerProfileScreen = ({
       setLoading(false);
     }
 
-  }, [customerId]);
+  }, [customerId, user]);
 
 
   // ======================================

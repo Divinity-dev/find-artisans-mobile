@@ -13,6 +13,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import * as ImagePicker from "expo-image-picker";
+import * as ImageManipulator from "expo-image-manipulator";
+import * as FileSystem from "expo-file-system/legacy";
 import { Ionicons } from "@expo/vector-icons";
 
 import { useAuth } from "../context/AuthContext";
@@ -170,51 +172,91 @@ const PostJobScreen = ({ navigation }) => {
         return [];
       }
 
+      const cloudinaryPreset =
+        process.env
+          .EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+
+      const cloudName =
+        process.env
+          .EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME;
+
+      if (!cloudName || !cloudinaryPreset) {
+        throw new Error(
+          "Cloudinary configuration is missing."
+        );
+      }
+
       const uploadedUrls = [];
 
       for (const image of images) {
-        const formData =
-          new FormData();
+        if (!image?.uri) {
+          continue;
+        }
 
-        formData.append(
-          "file",
-          {
-            uri: image.uri,
-            type:
-              image.mimeType ||
-              "image/jpeg",
-            name:
-              image.fileName ||
-              `job-image-${Date.now()}.jpg`,
-          }
-        );
-
-        formData.append(
-          "upload_preset",
-          process.env
-            .EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET
-        );
-
-        const response =
-          await fetch(
-            `https://api.cloudinary.com/v1_1/${process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+        const manipulated =
+          await ImageManipulator.manipulateAsync(
+            image.uri,
+            [],
             {
-              method: "POST",
-              body: formData,
+              compress: 0.8,
+              format:
+                ImageManipulator.SaveFormat.JPEG,
             }
           );
 
-        const data =
-          await response.json();
+        const uploadResult =
+          await FileSystem.uploadAsync(
+            `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+            manipulated.uri,
+            {
+              httpMethod: "POST",
+              uploadType:
+                FileSystem.FileSystemUploadType.MULTIPART,
+              fieldName: "file",
+              mimeType:
+                image.mimeType ||
+                "image/jpeg",
+              parameters: {
+                upload_preset:
+                  cloudinaryPreset,
+              },
+            }
+          );
 
-        if (!response.ok) {
+        if (
+          uploadResult.status < 200 ||
+          uploadResult.status >= 300
+        ) {
+          let cloudinaryError;
+
+          try {
+            cloudinaryError =
+              JSON.parse(
+                uploadResult.body
+              );
+          } catch {
+            cloudinaryError = null;
+          }
+
           throw new Error(
-            data?.error?.message ||
+            cloudinaryError?.error?.message ||
               "Failed to upload image."
           );
         }
 
-        if (data.secure_url) {
+        let data;
+
+        try {
+          data = JSON.parse(
+            uploadResult.body
+          );
+        } catch {
+          throw new Error(
+            "Cloudinary returned an invalid response."
+          );
+        }
+
+        if (data?.secure_url) {
           uploadedUrls.push(
             data.secure_url
           );
